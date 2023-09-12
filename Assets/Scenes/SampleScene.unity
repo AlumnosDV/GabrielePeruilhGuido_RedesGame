@@ -378,6 +378,53 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1891041391
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1891041393}
+  - component: {fileID: 1891041392}
+  m_Layer: 0
+  m_Name: BulletPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1891041392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891041391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54642cdce08ccc4284ef1e87423338c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _initialPoolSize: 10
+  parentTransform: {fileID: 1891041393}
+  _bulletPrefab: {fileID: 4077815282145846720, guid: 84260b8e56affb64093fd49b4be500c8, type: 3}
+--- !u!4 &1891041393
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891041391}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2125206091 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8606299070874419354, guid: 01ce1c583a998df46a1042a3078b7280, type: 3}
@@ -390,6 +437,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3874981018876439920, guid: 819eac48a4d6955459e60ffceb7efdc3, type: 3}
+      propertyPath: _bulletPool
+      value: 
+      objectReference: {fileID: 1891041392}
     - target: {fileID: 7728324260512554156, guid: 819eac48a4d6955459e60ffceb7efdc3, type: 3}
       propertyPath: m_Name
       value: Player
@@ -444,11 +495,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8795003815955624918, guid: 819eac48a4d6955459e60ffceb7efdc3, type: 3}
       propertyPath: NetworkGuid.RawGuidValue.Array.data[0]
-      value: 3549214634281696416
+      value: -6175433854846383531
       objectReference: {fileID: 0}
     - target: {fileID: 8795003815955624918, guid: 819eac48a4d6955459e60ffceb7efdc3, type: 3}
       propertyPath: NetworkGuid.RawGuidValue.Array.data[1]
-      value: -701585268310658651
+      value: 5439125043060954787
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 819eac48a4d6955459e60ffceb7efdc3, type: 3}
