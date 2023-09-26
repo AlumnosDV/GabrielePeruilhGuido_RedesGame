@@ -1,15 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace RedesGame.Bullets
 {
-    public class BulletPool : ObjectPool
+    public class BulletPool : ObjectPool<Bullet>
     {
-        [SerializeField] private GameObject _bulletPrefab;
-        protected override GameObject IntantiateObject()
+        [SerializeField] private Bullet _bulletPrefab;
+        protected override Bullet IntantiateObject()
         {
-            return Instantiate(_bulletPrefab);
+            return Runner.Spawn(_bulletPrefab);
         }
     }
 }

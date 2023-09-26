@@ -1,59 +1,60 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Fusion;
 
 namespace RedesGame
 {
-    public abstract class ObjectPool : MonoBehaviour
+    public abstract class ObjectPool<T> : NetworkBehaviour where T : MonoBehaviour
     {
         [SerializeField] private int _initialPoolSize;
         [SerializeField] private Transform parentTransform;
-        private List<GameObject> objects;
+        private List<T> objects;
 
-        private void Awake()
+        public override void Spawned()
         {
-            objects = new List<GameObject>(_initialPoolSize);
+            base.Spawned();
+            objects = new List<T>(_initialPoolSize);
             for (int i = 0; i < _initialPoolSize; i++)
             {
                 CreateNewObject();
             }
         }
 
-        public GameObject GetObject()
+        public T GetObject()
         {
-            GameObject obj = null;
+            T obj = null;
             for (int i = 0; i < objects.Count; i++)
             {
-                if (!objects[i].activeInHierarchy)
+                if (!objects[i].gameObject.activeInHierarchy)
                 {
                     obj = objects[i];
-                    obj.SetActive(true);
+                    obj.gameObject.SetActive(true);
                     break;
                 }
             }
             if (obj == null)
             {
                 obj = CreateNewObject();
-                obj.SetActive(true);
+                obj.gameObject.SetActive(true);
             }
             return obj;
         }
 
-        public void ReturnObject(GameObject obj)
+        public void ReturnObject(T obj)
         {
-            obj.SetActive(false);
+            obj.gameObject.SetActive(false);
             obj.transform.SetParent(parentTransform);
         }
 
-        private GameObject CreateNewObject()
+        private T CreateNewObject()
         {
-            GameObject obj = IntantiateObject();
-            obj.SetActive(false);
+            T obj = IntantiateObject();
             obj.transform.SetParent(parentTransform);
             objects.Add(obj);
             return obj;
         }
 
-        protected abstract GameObject IntantiateObject();
+        protected abstract T IntantiateObject();
     }
 }

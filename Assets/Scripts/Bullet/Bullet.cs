@@ -1,5 +1,6 @@
 using RedesGame.Damageables;
 using RedesGame.SO;
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,17 +8,18 @@ using UnityEngine;
 namespace RedesGame.Bullets
 {
     [RequireComponent(typeof(Rigidbody2D))]
-    public class Bullet : MonoBehaviour
+    public class Bullet : NetworkBehaviour
     {
         [SerializeField] private BulletDataSO _bulletData;
         public BulletPool MyBulletPool { set; protected get; }
-        private Rigidbody2D _myRigidBody;
+        private NetworkRigidbody2D _myRigidBody;
         private TrailRenderer _trailRenderer;
 
 
-        private void Awake()
+        public override void Spawned()
         {
-            _myRigidBody = GetComponent<Rigidbody2D>();
+            base.Spawned();
+            _myRigidBody = GetComponent<NetworkRigidbody2D>();
             _trailRenderer = GetComponent<TrailRenderer>();
             ActiveTrailRenderer(false);
         }
@@ -28,13 +30,15 @@ namespace RedesGame.Bullets
             if (MyBulletPool == null)
                 gameObject.SetActive(false);
             else
-                MyBulletPool.ReturnObject(gameObject);
+                MyBulletPool.ReturnObject(this);
+
+            //Runner.Despawn(Object);
         }
 
         public void Launch(Vector2 direction)
         {
             ActiveTrailRenderer(true);
-            _myRigidBody.velocity = direction.normalized * _bulletData.Speed;
+            _myRigidBody.Rigidbody.velocity = direction.normalized * _bulletData.Speed;
         }
 
         private void ActiveTrailRenderer(bool active)
