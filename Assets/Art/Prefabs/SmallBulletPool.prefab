@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b54642cdce08ccc4284ef1e87423338c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interpolationDataSource: 0
   _initialPoolSize: 10
   parentTransform: {fileID: 1061149458852973057}
   _bulletPrefab: {fileID: 3385327283098194592, guid: 84260b8e56affb64093fd49b4be500c8, type: 3}
@@ -70,6 +69,5 @@ MonoBehaviour:
   NetworkGuid:
     RawGuidValue: ec5de5e198405a44fb89247e06b6176e
   NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1061149458852973056}
+  NetworkedBehaviours: []
   SimulationBehaviours: []

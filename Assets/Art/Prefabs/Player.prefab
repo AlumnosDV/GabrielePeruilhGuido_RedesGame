@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2928817572824959132}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.326, y: -0.058, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -477,8 +477,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7728324260512554157}
   - component: {fileID: 8795003815955624918}
-  - component: {fileID: 168242747722214199}
   - component: {fileID: 7279470534782841472}
+  - component: {fileID: 168242747722214199}
   - component: {fileID: 7443599517713257637}
   - component: {fileID: 2776309003552159084}
   - component: {fileID: 3874981018876439920}
@@ -537,22 +537,6 @@ MonoBehaviour:
   - {fileID: 3468848899160017911}
   - {fileID: 4466956225148972679}
   SimulationBehaviours: []
---- !u!58 &168242747722214199
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7728324260512554156}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.5
 --- !u!61 &7279470534782841472
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -579,6 +563,22 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 0.020983785}
   m_EdgeRadius: 0
+--- !u!58 &168242747722214199
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7728324260512554156}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!114 &7443599517713257637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -642,11 +642,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   _netWorkAnimator: {fileID: 4466956225148972679}
-  _networkRigidbody: {fileID: 7443599517713257637}
+  _networkRigidbody2D: {fileID: 7443599517713257637}
   _bulletPool: {fileID: 0}
   _firePoint: {fileID: 5333544375969007227}
-  _moveSpeed: 2
-  _jumpForce: 30
+  _bulletPrefab: {fileID: 3385327283098194592, guid: 84260b8e56affb64093fd49b4be500c8, type: 3}
+  _moveSpeed: 100
+  _jumpForce: 35
+  _Life: 3
 --- !u!114 &3468848899160017911
 MonoBehaviour:
   m_ObjectHideFlags: 0

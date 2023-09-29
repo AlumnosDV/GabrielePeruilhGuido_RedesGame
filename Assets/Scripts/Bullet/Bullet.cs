@@ -1,8 +1,6 @@
 using RedesGame.Damageables;
 using RedesGame.SO;
 using Fusion;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RedesGame.Bullets
@@ -14,6 +12,7 @@ namespace RedesGame.Bullets
         public BulletPool MyBulletPool { set; protected get; }
         private NetworkRigidbody2D _myRigidBody;
         private TrailRenderer _trailRenderer;
+        private GameObject _shooter;
 
 
         public override void Spawned()
@@ -21,24 +20,25 @@ namespace RedesGame.Bullets
             base.Spawned();
             _myRigidBody = GetComponent<NetworkRigidbody2D>();
             _trailRenderer = GetComponent<TrailRenderer>();
-            ActiveTrailRenderer(false);
+            //ActiveTrailRenderer(false);
         }
 
         private void DestroyBullet()
         {
-            ActiveTrailRenderer(false);
-            if (MyBulletPool == null)
-                gameObject.SetActive(false);
-            else
-                MyBulletPool.ReturnObject(this);
+            //ActiveTrailRenderer(false);
+            //if (MyBulletPool == null)
+            //    gameObject.SetActive(false);
+            //else
+            //    MyBulletPool.ReturnObject(this);
 
-            //Runner.Despawn(Object);
+            Runner.Despawn(Object);
         }
 
-        public void Launch(Vector2 direction)
+        public void Launch(Vector2 direction, GameObject shooter)
         {
             ActiveTrailRenderer(true);
-            _myRigidBody.Rigidbody.velocity = direction.normalized * _bulletData.Speed;
+            _myRigidBody.Rigidbody.AddForce(direction.normalized * _bulletData.Speed, ForceMode2D.Impulse);
+            _shooter = shooter;
         }
 
         private void ActiveTrailRenderer(bool active)
@@ -48,8 +48,11 @@ namespace RedesGame.Bullets
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            collision.gameObject.GetComponent<IDamageable>()?.TakeDamage(_bulletData.Damage);
-            DestroyBullet();
+            if (_shooter == collision.gameObject) return;
+            if (!Object && !Object.HasStateAuthority) return;
+            collision.gameObject.GetComponent<IDamageable>()?.TakeForceDamage(_bulletData.ForceDamage, _myRigidBody.Rigidbody.velocity.normalized);
+
+            Runner.Despawn(Object);
         }
     }
 }

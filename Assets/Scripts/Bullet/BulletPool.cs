@@ -8,9 +8,9 @@ namespace RedesGame.Bullets
     public class BulletPool : ObjectPool<Bullet>
     {
         [SerializeField] private Bullet _bulletPrefab;
-        protected override Bullet IntantiateObject()
+        protected override Bullet InstantiateObject()
         {
-            return Runner.Spawn(_bulletPrefab);
+            return Instantiate(_bulletPrefab);
         }
     }
 }

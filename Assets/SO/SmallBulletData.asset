@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76775155c02ac5243829e358e6131f98, type: 3}
   m_Name: SmallBulletData
   m_EditorClassIdentifier: 
-  <Damage>k__BackingField: 10
+  <ForceDamage>k__BackingField: 750
   <Speed>k__BackingField: 50

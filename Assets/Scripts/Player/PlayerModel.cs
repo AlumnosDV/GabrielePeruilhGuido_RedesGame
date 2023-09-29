@@ -12,16 +12,15 @@ namespace RedesGame.Player
     public class PlayerModel : NetworkBehaviour, IDamageable
     {
         [SerializeField] private NetworkMecanimAnimator _netWorkAnimator;
-        [SerializeField] private NetworkRigidbody2D _networkRigidbody;
+        [SerializeField] private NetworkRigidbody2D _networkRigidbody2D;
 
         [SerializeField] private BulletPool _bulletPool;
         [SerializeField] private GameObject _firePoint;
+        [SerializeField] private Bullet _bulletPrefab;
+
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
-
-        [Networked(OnChanged = nameof(OnFiringChanged))]
-        private bool _isFiring { get; set; }
 
         private NetworkInputData _inputs;
 
@@ -29,6 +28,13 @@ namespace RedesGame.Player
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
 
+        public event Action<float> OnLifeUpdate = delegate { };
+
+        [Networked(OnChanged = nameof(OnFiringChanged))]
+        private bool _isFiring { get; set; }
+
+        [Networked(OnChanged = nameof(OnLifeChanged))]
+        [SerializeField] private float Life { get; set; }
 
         void Start()
         {
@@ -59,7 +65,7 @@ namespace RedesGame.Player
 
             if (xAxis != 0)
             {
-                _networkRigidbody.Rigidbody.AddForce(new Vector2(xAxis * _moveSpeed, 0f), ForceMode2D.Impulse);
+                _networkRigidbody2D.Rigidbody.AddForce(new Vector2(xAxis * _moveSpeed, 0f), ForceMode2D.Force);
 
                 _currentSign = (int)Mathf.Sign(xAxis);
 
@@ -81,7 +87,7 @@ namespace RedesGame.Player
 
         void Jump()
         {
-            _networkRigidbody.Rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
+            _networkRigidbody2D.Rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         }
 
         static void OnFiringChanged(Changed<PlayerModel> changed)
@@ -94,22 +100,51 @@ namespace RedesGame.Player
 
         void Shoot()
         {
-            var bulletObject = _bulletPool.GetObject();
-            if (bulletObject.TryGetComponent(out Bullet bullet))
-            {
-                //Debug.Log(bulletObject.name);
-                bullet.MyBulletPool = _bulletPool;
-                bullet.transform.position = _firePoint.transform.position;
-                bullet.transform.up = Vector2.right;
-                //Runner.Spawn(bulletObject, bullet.transform.position, bullet.transform.rotation);
-                bullet.Launch(transform.right);
-            }
+            var bullet = Runner.Spawn(_bulletPrefab, _firePoint.transform.position);
+            bullet.transform.up = transform.right;
+            bullet.Launch(transform.right, gameObject);
+            //var bulletObject = _bulletPool.GetObject();
+            //if (bulletObject.TryGetComponent(out Bullet bullet))
+            //{
+            //    //Debug.Log(bulletObject.name);
+            //    bullet.MyBulletPool = _bulletPool;
+            //    bullet.transform.position = _firePoint.transform.position;
+            //    bullet.transform.up = Vector2.right;
+            //}
         }
 
 
-        public void TakeDamage(float dmg)
+        public void TakeForceDamage(float dmg, Vector2 direction)
         {
-            Debug.Log("Agregar el impulso hacia atras");
+            _networkRigidbody2D.Rigidbody.AddForce(direction * dmg, ForceMode2D.Force);
+        }
+
+        public void TakeLifeDamage()
+        {
+            RPC_TakeDamage(1);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_TakeDamage(float dmg)
+        {
+            Life -= dmg;
+            Debug.Log($"New Life {Life}");
+            if (Life <= 0)
+            {
+                Dead();
+            }
+        }
+
+        static void OnLifeChanged(Changed<PlayerModel> changed)
+        {
+            var behaviour = changed.Behaviour;
+
+            behaviour.OnLifeUpdate(behaviour.Life / 100);
+        }
+
+        void Dead()
+        {
+            Runner.Shutdown();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
