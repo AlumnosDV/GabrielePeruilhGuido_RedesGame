@@ -9,16 +9,28 @@ namespace RedesGame.Player
 {
     public class SpawnNetworkPlayer : MonoBehaviour, INetworkRunnerCallbacks
     {
+        [SerializeField] private int _maxPlayersPerGame = 2;
         [SerializeField] private NetworkPlayer _playerPrefab;
         private NetworkCharacterController _characterController;
 
+        [Networked]
+        private int PlayersInGame { get; set; }
+
+        [SerializeField] private Transform[] InitialPositionOfPlayers = new Transform[2];  
 
         public void OnConnectedToServer(NetworkRunner runner)
         {
+            if (PlayersInGame >= _maxPlayersPerGame) return;
             if (runner.Topology == SimulationConfig.Topologies.Shared)
             {
-                var localPlayer = runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, runner.LocalPlayer);
+                var localPlayer = runner.Spawn(_playerPrefab, 
+                    InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].position, 
+                    Quaternion.identity, 
+                    runner.LocalPlayer);
+                
                 _characterController = localPlayer.GetComponent<NetworkCharacterController>();
+                PlayersInGame++;
+                Debug.Log(PlayersInGame);
             }
         }
 
@@ -28,8 +40,6 @@ namespace RedesGame.Player
 
             input.Set(_characterController.GetLocalInputs());
         }
-
-        #region Callbacks sin usar
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
 
@@ -59,7 +69,6 @@ namespace RedesGame.Player
 
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 
-        #endregion
     }
 
 }
