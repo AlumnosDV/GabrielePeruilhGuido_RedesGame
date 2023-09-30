@@ -16,7 +16,7 @@ namespace RedesGame.Player
         [Networked]
         private int PlayersInGame { get; set; }
 
-        [SerializeField] private Transform[] InitialPositionOfPlayers = new Transform[2];  
+        [SerializeField] public Transform[] InitialPositionOfPlayers = new Transform[2];  
 
         public void OnConnectedToServer(NetworkRunner runner)
         {
@@ -27,7 +27,7 @@ namespace RedesGame.Player
                     InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].position, 
                     Quaternion.identity, 
                     runner.LocalPlayer);
-                
+                localPlayer.transform.right = InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].right;
                 _characterController = localPlayer.GetComponent<NetworkCharacterController>();
                 PlayersInGame++;
                 Debug.Log(PlayersInGame);

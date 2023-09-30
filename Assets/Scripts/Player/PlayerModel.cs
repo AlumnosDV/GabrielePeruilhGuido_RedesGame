@@ -21,10 +21,11 @@ namespace RedesGame.Player
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
+        private Vector3 _initialPosition;
 
         private NetworkInputData _inputs;
 
-        private bool _isJumping = false;
+        public bool IsJumping = false;
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
 
@@ -38,8 +39,8 @@ namespace RedesGame.Player
 
         void Start()
         {
-            transform.right = Vector2.right;
             _bulletPool = FindObjectOfType<BulletPool>();
+            _initialPosition = transform.position;
         }
 
         public override void FixedUpdateNetwork()
@@ -51,7 +52,7 @@ namespace RedesGame.Player
                     Shoot();
                 }
 
-                if (_inputs.isJumpPressed && !_isJumping)
+                if (_inputs.isJumpPressed && !IsJumping)
                 {
                     Jump();
                 }
@@ -125,10 +126,10 @@ namespace RedesGame.Player
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        private void RPC_TakeDamage(float dmg)
+        private void RPC_TakeDamage(float lostLife)
         {
-            Life -= dmg;
-            Debug.Log($"New Life {Life}");
+            Life -= lostLife;
+            gameObject.transform.position = _initialPosition;
             if (Life <= 0)
             {
                 Dead();
@@ -147,16 +148,6 @@ namespace RedesGame.Player
             Runner.Shutdown();
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
-        {
-            if (collision.CompareTag("Floor"))
-                _isJumping = false;
-        }
 
-        private void OnTriggerExit2D(Collider2D collision)
-        {
-            if (collision.CompareTag("Floor"))
-                _isJumping = true;
-        }
     }
 }
