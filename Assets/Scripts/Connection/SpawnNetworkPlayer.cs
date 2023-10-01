@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
@@ -30,7 +29,6 @@ namespace RedesGame.Player
                 localPlayer.transform.right = InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].right;
                 _characterController = localPlayer.GetComponent<NetworkCharacterController>();
                 PlayersInGame++;
-                Debug.Log(PlayersInGame);
             }
         }
 
@@ -41,7 +39,10 @@ namespace RedesGame.Player
             input.Set(_characterController.GetLocalInputs());
         }
 
-        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
+        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) 
+        {
+            
+        }
 
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
 

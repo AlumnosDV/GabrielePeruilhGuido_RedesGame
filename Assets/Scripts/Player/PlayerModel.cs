@@ -2,8 +2,6 @@ using Fusion;
 using RedesGame.Bullets;
 using RedesGame.Damageables;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RedesGame.Player
@@ -16,12 +14,15 @@ namespace RedesGame.Player
 
         [SerializeField] private BulletPool _bulletPool;
         [SerializeField] private GameObject _firePoint;
+        [SerializeField] private GameObject _canvas;
         [SerializeField] private Bullet _bulletPrefab;
 
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
+        [SerializeField] private int _maxLife = 3;
         private Vector3 _initialPosition;
+        private Vector2 _initialRight;
 
         private NetworkInputData _inputs;
 
@@ -35,12 +36,14 @@ namespace RedesGame.Player
         private bool _isFiring { get; set; }
 
         [Networked(OnChanged = nameof(OnLifeChanged))]
-        [SerializeField] private float Life { get; set; }
+        private int Life { get; set; }
 
         void Start()
         {
-            _bulletPool = FindObjectOfType<BulletPool>();
+            //_bulletPool = FindObjectOfType<BulletPool>();
             _initialPosition = transform.position;
+            _initialRight = transform.right;
+            Life = _maxLife;
         }
 
         public override void FixedUpdateNetwork()
@@ -75,6 +78,7 @@ namespace RedesGame.Player
                     _previousSign = _currentSign;
 
                     transform.right = Vector2.right * _currentSign;
+                    _canvas.transform.right = Vector2.right;
                 }
 
                 _netWorkAnimator.Animator.SetFloat("HorizontalValue", Mathf.Abs(xAxis));
@@ -122,11 +126,11 @@ namespace RedesGame.Player
 
         public void TakeLifeDamage()
         {
-            RPC_TakeDamage(1);
+            RPC_TakeLifeDamage(1);
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        private void RPC_TakeDamage(float lostLife)
+        private void RPC_TakeLifeDamage(int lostLife)
         {
             Life -= lostLife;
             gameObject.transform.position = _initialPosition;
@@ -148,6 +152,12 @@ namespace RedesGame.Player
             Runner.Shutdown();
         }
 
+        private void ResetPlayer()
+        {
+            transform.position = _initialPosition;
+            transform.right = _initialRight;
+            Life = _maxLife;
+        }
 
     }
 }
