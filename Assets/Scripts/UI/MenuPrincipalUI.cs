@@ -4,12 +4,14 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using RedesGame.UI.Sessions;
 
 namespace RedesGame.UI
 {
     public class MenuPrincipalUI : MonoBehaviour
     {
         [SerializeField] private NetworkHandler _networkHandler;
+        [SerializeField] private SessionListUIHandler _sessionListUIHandler;
 
         [Header("Player Settings")]
         [SerializeField] private TMP_InputField _nickNameInput;
@@ -25,6 +27,7 @@ namespace RedesGame.UI
         [SerializeField] private GameObject _createSessionScreen;
         [SerializeField] private GameObject _mainMenuButtons;
         [SerializeField] private GameObject _backButton;
+        [SerializeField] private GameObject _onJoiningSessionScreen;
 
         private Stack<ICommand> commandStack = new Stack<ICommand>();
         [ContextMenu("Default Awake")]
@@ -37,6 +40,7 @@ namespace RedesGame.UI
             _nickNameScreen.SetActive(true);
             _sessionsScreen.SetActive(false);
             _createSessionScreen.SetActive(false);
+            _onJoiningSessionScreen.SetActive(false);
             _nickNameInput.gameObject.SetActive(true);
         }
 
@@ -73,15 +77,22 @@ namespace RedesGame.UI
 
         public void GoToSessionsList()
         {
-            _networkHandler.OnJoinLobby();
             ExecuteCommand(new ChangeMenuCommand(
                 new[] { _sessionsScreen, _backButton }, new[] { _mainMenuButtons }));
+            _sessionListUIHandler.OnLookingForSessions();
+            _networkHandler.OnJoinLobby();
         }
 
         public void GoToCreateSession()
         {
             ExecuteCommand(new ChangeMenuCommand(
                 new[] { _createSessionScreen }, new[] { _sessionsScreen }));
+        }
+
+        public void GoToJoiningSessionScreen()
+        {
+            ExecuteCommand(new ChangeMenuCommand(
+                new[] { _onJoiningSessionScreen }, new[] { _sessionsScreen, _backButton }));
         }
 
         public void GoBack()

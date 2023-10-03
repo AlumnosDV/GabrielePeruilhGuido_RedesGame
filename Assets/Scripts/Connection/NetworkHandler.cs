@@ -17,14 +17,15 @@ public class NetworkHandler : MonoBehaviour
             _runner = networkRunnerInScene;
     }
 
+    /*
     void Start()
     {
         if (SceneManager.GetActiveScene().name != "MainMenu")
         {
             var clientTask = InitializeGame(GameMode.Shared, SceneManager.GetActiveScene().buildIndex, "TestSession");
         }
-
     }
+    */
 
     Task InitializeGame(GameMode gameMode, SceneRef sceneToLoad, string sessionName)
     {
@@ -62,7 +63,7 @@ public class NetworkHandler : MonoBehaviour
     {
         string lobbyId = "OurLobbyId";
         //GameMode.Shared
-        var result = await _runner.JoinSessionLobby(SessionLobby.Custom, lobbyId);
+        var result = await _runner.JoinSessionLobby(SessionLobby.Shared, lobbyId);
     }
 
 

@@ -3,14 +3,16 @@ using RedesGame.Bullets;
 using RedesGame.Damageables;
 using System;
 using UnityEngine;
+using RedesGame.ExtensionsClass;
+using RedesGame.Managers;
 
 namespace RedesGame.Player
 {
-    [RequireComponent(typeof(Rigidbody2D))]
-    public class PlayerModel : NetworkBehaviour, IDamageable
+    public class PlayerModel : NetworkBehaviour, IDamageable, IActivable
     {
         [SerializeField] private NetworkMecanimAnimator _netWorkAnimator;
         [SerializeField] private NetworkRigidbody2D _networkRigidbody2D;
+        [SerializeField] private NetworkTransform _myTransformObject;
 
         [SerializeField] private BulletPool _bulletPool;
         [SerializeField] private GameObject _firePoint;
@@ -21,12 +23,11 @@ namespace RedesGame.Player
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
         [SerializeField] private int _maxLife = 3;
-        private Vector3 _initialPosition;
-        private Vector2 _initialRight;
 
         private NetworkInputData _inputs;
 
         public bool IsJumping = false;
+        private bool _isActive = false;
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
 
@@ -41,13 +42,31 @@ namespace RedesGame.Player
         void Start()
         {
             //_bulletPool = FindObjectOfType<BulletPool>();
-            _initialPosition = transform.position;
-            _initialRight = transform.right;
             Life = _maxLife;
+        }
+
+        private void OnEnable()
+        {
+            ScreenManager.Instance.Subscribe(this);
+            EventManager.StartListening("AllPlayersInGame", OnAllPlayersInGame);
+        }
+
+
+        private void OnDisable()
+        {
+            ScreenManager.Instance.Unsubscribe(this);
+            EventManager.StopListening("AllPlayersInGame", OnAllPlayersInGame);
+        }
+
+        private void OnAllPlayersInGame(object[] obj)
+        {
+            transform.position = Extensions.GetRandomSpawnPoint();
         }
 
         public override void FixedUpdateNetwork()
         {
+            if (!_isActive) return;
+
             if (GetInput(out _inputs))
             {
                 if (_inputs.isFirePressed)
@@ -77,8 +96,8 @@ namespace RedesGame.Player
                 {
                     _previousSign = _currentSign;
 
-                    transform.right = Vector2.right * _currentSign;
-                    _canvas.transform.right = Vector2.right;
+                    _myTransformObject.transform.right = Vector2.right * _currentSign;
+                    //_canvas.transform.right = Vector2.right;
                 }
 
                 _netWorkAnimator.Animator.SetFloat("HorizontalValue", Mathf.Abs(xAxis));
@@ -133,7 +152,7 @@ namespace RedesGame.Player
         private void RPC_TakeLifeDamage(int lostLife)
         {
             Life -= lostLife;
-            gameObject.transform.position = _initialPosition;
+            transform.position = Extensions.GetRandomSpawnPoint();
             if (Life <= 0)
             {
                 Dead();
@@ -152,12 +171,14 @@ namespace RedesGame.Player
             Runner.Shutdown();
         }
 
-        private void ResetPlayer()
+        public void Activate()
         {
-            transform.position = _initialPosition;
-            transform.right = _initialRight;
-            Life = _maxLife;
+            _isActive = true;
         }
 
+        public void Deactivate()
+        {
+            _isActive = false;
+        }
     }
 }

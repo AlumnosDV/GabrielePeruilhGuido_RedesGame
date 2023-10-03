@@ -3,33 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using Fusion.Sockets;
+using RedesGame.UI.Sessions;
+using RedesGame.ExtensionsClass;
+using RedesGame.Managers;
 
 namespace RedesGame.Player
 {
     public class SpawnNetworkPlayer : MonoBehaviour, INetworkRunnerCallbacks
     {
-        [SerializeField] private int _maxPlayersPerGame = 2;
         [SerializeField] private NetworkPlayer _playerPrefab;
+        [SerializeField] private SessionListUIHandler _sessionListUIHandler;
         private NetworkCharacterController _characterController;
-
-        [Networked]
-        private int PlayersInGame { get; set; }
-
-        [SerializeField] public Transform[] InitialPositionOfPlayers = new Transform[2];  
 
         public void OnConnectedToServer(NetworkRunner runner)
         {
-            if (PlayersInGame >= _maxPlayersPerGame) return;
-            if (runner.Topology == SimulationConfig.Topologies.Shared)
-            {
-                var localPlayer = runner.Spawn(_playerPrefab, 
-                    InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].position, 
-                    Quaternion.identity, 
-                    runner.LocalPlayer);
-                localPlayer.transform.right = InitialPositionOfPlayers[runner.LocalPlayer.PlayerId].right;
-                _characterController = localPlayer.GetComponent<NetworkCharacterController>();
-                PlayersInGame++;
-            }
+
         }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
@@ -41,7 +29,7 @@ namespace RedesGame.Player
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) 
         {
-            
+
         }
 
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
@@ -60,11 +48,41 @@ namespace RedesGame.Player
 
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
 
-        public void OnSceneLoadDone(NetworkRunner runner) { }
+        public void OnSceneLoadDone(NetworkRunner runner) 
+        
+        {
+            if (runner.Topology == SimulationConfig.Topologies.Shared)
+            {
+                var localPlayer = runner.Spawn(_playerPrefab,
+                    Extensions.GetRandomSpawnPoint(),
+                    Quaternion.identity,
+                    runner.LocalPlayer);
+                _characterController = localPlayer.GetComponent<NetworkCharacterController>();
+
+            }
+        }
 
         public void OnSceneLoadStart(NetworkRunner runner) { }
 
-        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
+        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) 
+        {
+            if (_sessionListUIHandler == null)
+                return;
+
+            if(sessionList.Count == 0)
+                _sessionListUIHandler.OnNoSessionFound();
+            else
+            {
+                _sessionListUIHandler.ClearList();
+
+                foreach (SessionInfo session in sessionList)
+                {
+                    _sessionListUIHandler.AddToList(session);
+                }
+            }
+
+            _sessionListUIHandler.ActiveCreateGameOption();
+        }
 
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
 

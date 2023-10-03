@@ -7,9 +7,19 @@ namespace RedesGame.UI.Sessions
 {
     public class SessionListUIHandler : MonoBehaviour
     {
+        [SerializeField] private NetworkHandler _networkHandler;
+        [SerializeField] private MenuPrincipalUI _menuPrincipalUI;
+        [Header("Canvas Items")]
         [SerializeField] private TextMeshProUGUI _statusText;
         [SerializeField] private GameObject _sessionItemListPrefab;
+        [SerializeField] private GameObject _createSessionButton;
         [SerializeField] private VerticalLayoutGroup _verticalLayoutGroup;
+
+        private void Awake()
+        {
+            ClearList();
+            _createSessionButton.SetActive(false);
+        }
 
         public void ClearList()
         {
@@ -17,7 +27,8 @@ namespace RedesGame.UI.Sessions
             {
                 Destroy(child.gameObject);
             }
-            _statusText.gameObject.SetActive(false);
+            if (_statusText == null) return;
+                _statusText.gameObject.SetActive(false);
         }
 
         public void AddToList(SessionInfo sessionInfo)
@@ -31,17 +42,25 @@ namespace RedesGame.UI.Sessions
 
         private void AddedSessionInfoListUIItem_OnJoinSession(SessionInfo sessionInfo)
         {
+            _networkHandler.JoinGame(sessionInfo);
+            _menuPrincipalUI.GoToJoiningSessionScreen();
+        }
 
+        public void ActiveCreateGameOption()
+        {
+            _createSessionButton.SetActive(true);
         }
 
         public void OnNoSessionFound()
         {
+            ClearList();
             _statusText.text = "No Games Founded";
             _statusText.gameObject.SetActive(true);
         }
 
         public void OnLookingForSessions()
         {
+            ClearList();
             _statusText.text = "Looking for Game Sessions";
             _statusText.gameObject.SetActive(true);
         }

@@ -4,10 +4,11 @@ using UnityEngine;
 using Fusion;
 using TMPro;
 using System;
+using RedesGame.Managers;
 
 namespace RedesGame.Player
 {
-    public class NetworkPlayer : NetworkBehaviour
+    public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     {
         public TextMeshProUGUI PlayerNickNameTM;
         public static NetworkPlayer Local { get; private set; }
@@ -23,7 +24,8 @@ namespace RedesGame.Player
                 RPC_SetNickName(PlayerPrefs.GetString("PlayerNickName"));
             }
 
-            transform.name = $"P_{Object.Id}";
+            transform.name = $"{NickName}_ID_{Object.Id}";
+            EventManager.TriggerEvent("PlayerJoined");
         }
 
         static void OnNickNameChanged(Changed<NetworkPlayer> changed)
@@ -42,5 +44,10 @@ namespace RedesGame.Player
             this.NickName = nickName;
         }
 
+        public void PlayerLeft(PlayerRef player)
+        {
+            if (player == Object.InputAuthority)
+                Runner.Despawn(Object);
+        }
     }
 }
