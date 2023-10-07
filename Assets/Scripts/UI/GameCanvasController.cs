@@ -1,39 +1,56 @@
+using Fusion;
 using RedesGame.Managers;
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace RedesGame.UI
 {
     public class GameCanvasController : MonoBehaviour
     {
-        [SerializeField] private GameObject _wonMenu;
-        [SerializeField] private GameObject _loseMenu;
+
         [SerializeField] private GameObject _waitingScreen;
+        [SerializeField] private GameObject _winConditionScreen;
+        [SerializeField] private GameObject _loseConditionScreen;
         [SerializeField] private TextMeshProUGUI _timerText;
 
 
         private void Awake()
         {
-            _wonMenu.SetActive(false);
-            _loseMenu.SetActive(false);
+            _winConditionScreen.SetActive(false);
+            _loseConditionScreen.SetActive(false);
             _waitingScreen.SetActive(true);
             ScreenManager.Instance.Deactivate();
         }
+
 
         private void OnEnable()
         {
             EventManager.StartListening("UpdateTimer", OnUpdateTimer);
             EventManager.StartListening("AllPlayersInGame", OnAllPlayersInGame);
+            EventManager.StartListening("Dead", OnWiningCondition);
         }
-
 
 
         private void OnDisable()
         {
             EventManager.StopListening("UpdateTimer", OnUpdateTimer);
             EventManager.StopListening("AllPlayersInGame", OnAllPlayersInGame);
+            EventManager.StopListening("Dead", OnWiningCondition);
+
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void OnWiningCondition(object[] obj)
+        {
+            Debug.Log("On wining Screen event");
+            ScreenManager.Instance.Deactivate();
+
+            if ((bool)obj[0])
+                _loseConditionScreen.SetActive(true);
+            else
+                _winConditionScreen.SetActive(true);
+
         }
 
         private void OnAllPlayersInGame(object[] obj)
@@ -56,18 +73,10 @@ namespace RedesGame.UI
                 ScreenManager.Instance.Activate();
         }
 
-        public void SetWinningConditionScreen(bool playerWins)
-        {
-
-            _wonMenu.SetActive(playerWins);
-            _loseMenu.SetActive(!playerWins);
-            ScreenManager.Instance.Deactivate();
-        }
-
 
         public void ReturnToMainMenu()
         {
-            SceneManager.LoadScene("MainMenu");
+            EventManager.TriggerEvent("GoToMainMenu");
         }
     }
 }

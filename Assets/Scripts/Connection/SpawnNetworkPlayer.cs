@@ -6,6 +6,7 @@ using Fusion.Sockets;
 using RedesGame.UI.Sessions;
 using RedesGame.ExtensionsClass;
 using RedesGame.Managers;
+using UnityEngine.SceneManagement;
 
 namespace RedesGame.Player
 {
@@ -44,21 +45,28 @@ namespace RedesGame.Player
 
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
 
-        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
+        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) 
+        {
+            EventManager.TriggerEvent("OnPlayerLeft");
+        }
 
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
 
         public void OnSceneLoadDone(NetworkRunner runner) 
-        
         {
-            if (runner.Topology == SimulationConfig.Topologies.Shared)
-            {
-                var localPlayer = runner.Spawn(_playerPrefab,
-                    Extensions.GetRandomSpawnPoint(),
-                    Quaternion.identity,
-                    runner.LocalPlayer);
-                _characterController = localPlayer.GetComponent<NetworkCharacterController>();
 
+            if (SceneManager.GetActiveScene().buildIndex != 0)
+            {
+                if (runner.Topology == SimulationConfig.Topologies.Shared)
+                {
+                
+                    var localPlayer = runner.Spawn(_playerPrefab,
+                        Extensions.GetRandomSpawnPoint(),
+                        Quaternion.identity,
+                        runner.LocalPlayer);
+                    _characterController = localPlayer.GetComponent<NetworkCharacterController>();
+                    Debug.Log("Spawn Object");
+                }
             }
         }
 
@@ -84,7 +92,10 @@ namespace RedesGame.Player
             _sessionListUIHandler.ActiveCreateGameOption();
         }
 
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) 
+        {
+            Debug.Log("OnShotdown");
+        }
 
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 

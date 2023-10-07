@@ -1,8 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
-using TMPro;
+using UnityEngine.SceneManagement;
+using RedesGame.Player;
 using System;
 
 namespace RedesGame.Managers
@@ -15,23 +14,38 @@ namespace RedesGame.Managers
 
 
         [Networked]
-        private int _playersInGame { get; set; }
+        private int PlayersInGame { get; set; }
         [Networked]
         private float Timer { get; set; }
 
+        [Networked(OnChanged = nameof(OnAllPlayersLeft))]
+        private bool AllPlayersLeft { get; set; }
+
+        static void OnAllPlayersLeft(Changed<GameManager> changed)
+        {
+            var behaviour = changed.Behaviour;
+            SceneManager.LoadScene("MainMenu");
+        }
 
         public override void Spawned()
         {
+            Debug.Log("Spawed Game Manager"); 
             ScreenManager.Instance.Deactivate();
             EventManager.StartListening("PlayerJoined", OnPlayerJoined);
+            EventManager.StartListening("GoToMainMenu", DespawnPlayers);
+        }
+
+        private void DespawnPlayers(object[] obj)
+        {
+            AllPlayersLeft = true;
         }
 
         private void OnPlayerJoined(object[] obj)
         {
 
-            _playersInGame++;
+            PlayersInGame++;
 
-            if (_playersInGame >= _minPlayersPerGame)
+            if (PlayersInGame >= _minPlayersPerGame)
                 EventManager.TriggerEvent("AllPlayersInGame");
         }
 

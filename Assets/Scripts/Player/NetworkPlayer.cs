@@ -5,6 +5,7 @@ using Fusion;
 using TMPro;
 using System;
 using RedesGame.Managers;
+using UnityEngine.SceneManagement;
 
 namespace RedesGame.Player
 {
@@ -18,14 +19,18 @@ namespace RedesGame.Player
 
         public override void Spawned()
         {
-            if (Object.HasInputAuthority)
+            if (SceneManager.GetActiveScene().name != "MainMenu")
             {
-                Local = this;
-                RPC_SetNickName(PlayerPrefs.GetString("PlayerNickName"));
+                if (Object.HasInputAuthority)
+                {
+                    Local = this;
+                    RPC_SetNickName(PlayerPrefs.GetString("PlayerNickName"));
+                }
+
+                transform.name = $"{NickName}_ID_{Object.Id}";
+                EventManager.TriggerEvent("PlayerJoined");
             }
 
-            transform.name = $"{NickName}_ID_{Object.Id}";
-            EventManager.TriggerEvent("PlayerJoined");
         }
 
         static void OnNickNameChanged(Changed<NetworkPlayer> changed)
@@ -48,6 +53,11 @@ namespace RedesGame.Player
         {
             if (player == Object.InputAuthority)
                 Runner.Despawn(Object);
+        }
+        public void PlayerLeft()
+        {
+            Debug.Log($"Object {Object.name} left");
+            Runner.Despawn(Object);
         }
     }
 }

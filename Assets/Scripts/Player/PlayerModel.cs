@@ -1,10 +1,12 @@
 using Fusion;
-using RedesGame.Bullets;
+using RedesGame.Guns;
 using RedesGame.Damageables;
 using System;
 using UnityEngine;
 using RedesGame.ExtensionsClass;
 using RedesGame.Managers;
+using System.Collections;
+using System.Linq;
 
 namespace RedesGame.Player
 {
@@ -12,37 +14,40 @@ namespace RedesGame.Player
     {
         [SerializeField] private NetworkMecanimAnimator _netWorkAnimator;
         [SerializeField] private NetworkRigidbody2D _networkRigidbody2D;
-        [SerializeField] private NetworkTransform _myTransformObject;
+        [SerializeField] private NetworkPlayer _networkPlayer;
 
-        [SerializeField] private BulletPool _bulletPool;
-        [SerializeField] private GameObject _firePoint;
         [SerializeField] private GameObject _canvas;
-        [SerializeField] private Bullet _bulletPrefab;
+        [SerializeField] private GameObject _playerBody;
+        [SerializeField] private LayerMask _gunsLayerMask;
+        [SerializeField] private Gun _myGun;
+        private Gun _myNewGun;
 
-
+        [SerializeField] private float _checkGunsRadious;
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
         [SerializeField] private int _maxLife = 3;
-
-        private NetworkInputData _inputs;
 
         public bool IsJumping = false;
         private bool _isActive = false;
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
+        private bool _playerDead = false;
+        private bool _isCloseFromGun = false;
 
-        public event Action<float> OnLifeUpdate = delegate { };
+        private NetworkInputData _inputs;
 
-        [Networked(OnChanged = nameof(OnFiringChanged))]
+        //[Networked(OnChanged = nameof(OnFiringChanged))]
         private bool _isFiring { get; set; }
 
-        [Networked(OnChanged = nameof(OnLifeChanged))]
         private int Life { get; set; }
+
+        [Networked(OnChanged = nameof(OnDeadChanged))]
+        private bool PlayerDead { get; set; }
 
         void Start()
         {
-            //_bulletPool = FindObjectOfType<BulletPool>();
             Life = _maxLife;
+            _myGun.gameObject.layer = LayerMask.NameToLayer("Gun");
         }
 
         private void OnEnable()
@@ -71,12 +76,17 @@ namespace RedesGame.Player
             {
                 if (_inputs.isFirePressed)
                 {
-                    Shoot();
+                    _myGun.Shoot();
                 }
 
                 if (_inputs.isJumpPressed && !IsJumping)
                 {
                     Jump();
+                }
+
+                if (IsCloseFromGun())
+                {
+                    ChangeGun();
                 }
 
                 Move(_inputs.xMovement);
@@ -96,8 +106,8 @@ namespace RedesGame.Player
                 {
                     _previousSign = _currentSign;
 
-                    _myTransformObject.transform.right = Vector2.right * _currentSign;
-                    //_canvas.transform.right = Vector2.right;
+                    transform.right = Vector2.right * _currentSign;
+                    _canvas.transform.right = Vector2.right;
                 }
 
                 _netWorkAnimator.Animator.SetFloat("HorizontalValue", Mathf.Abs(xAxis));
@@ -114,29 +124,13 @@ namespace RedesGame.Player
             _networkRigidbody2D.Rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         }
 
-        static void OnFiringChanged(Changed<PlayerModel> changed)
-        {
-            var updatedFiring = changed.Behaviour._isFiring;
-            changed.LoadOld();
-            var oldFiring = changed.Behaviour._isFiring;
+        //static void OnFiringChanged(Changed<PlayerModel> changed)
+        //{
+        //    var updatedFiring = changed.Behaviour._isFiring;
+        //    changed.LoadOld();
+        //    var oldFiring = changed.Behaviour._isFiring;
 
-        }
-
-        void Shoot()
-        {
-            var bullet = Runner.Spawn(_bulletPrefab, _firePoint.transform.position);
-            bullet.transform.up = transform.right;
-            bullet.Launch(transform.right, gameObject);
-            //var bulletObject = _bulletPool.GetObject();
-            //if (bulletObject.TryGetComponent(out Bullet bullet))
-            //{
-            //    //Debug.Log(bulletObject.name);
-            //    bullet.MyBulletPool = _bulletPool;
-            //    bullet.transform.position = _firePoint.transform.position;
-            //    bullet.transform.up = Vector2.right;
-            //}
-        }
-
+        //}
 
         public void TakeForceDamage(float dmg, Vector2 direction)
         {
@@ -152,23 +146,62 @@ namespace RedesGame.Player
         private void RPC_TakeLifeDamage(int lostLife)
         {
             Life -= lostLife;
+            Debug.Log($"Player ID {Runner.LocalPlayer.PlayerId}: Life {Life}");
             transform.position = Extensions.GetRandomSpawnPoint();
             if (Life <= 0)
             {
-                Dead();
+                PlayerDead = true;
+                _playerDead = true;
             }
         }
 
-        static void OnLifeChanged(Changed<PlayerModel> changed)
-        {
-            var behaviour = changed.Behaviour;
 
-            behaviour.OnLifeUpdate(behaviour.Life / 100);
+        private void ChangeGun()
+        {
+            RPC_ChangeGun();
         }
 
-        void Dead()
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_ChangeGun()
         {
-            Runner.Shutdown();
+            Debug.Log("Change Gun");
+            Runner.Despawn(_myGun.GetComponent<NetworkObject>());
+            _myNewGun.gameObject.transform.SetParent(_playerBody.transform);
+            _myNewGun.transform.position = _playerBody.transform.position;
+            _myNewGun.gameObject.layer = LayerMask.NameToLayer("Gun");
+            _myGun = _myNewGun;
+        }
+
+        static void OnDeadChanged(Changed<PlayerModel> changed)
+        {
+            var behaviour = changed.Behaviour;
+            EventManager.TriggerEvent("Dead", behaviour._playerDead);
+        }
+
+        private bool IsCloseFromGun()
+        {
+            var guns = FindObjectsOfType<Gun>()
+                .Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun") && Vector2.Distance(transform.position, gun.gameObject.transform.position) <= _checkGunsRadious)
+                .ToArray();
+
+            if (guns.Length > 0)
+            {
+                _isCloseFromGun = true;
+                _myNewGun = guns[0];
+            }
+            else
+            {
+                _isCloseFromGun = false;
+                _myNewGun = null;
+            }
+
+            return _isCloseFromGun;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(transform.position, _checkGunsRadious);
         }
 
         public void Activate()

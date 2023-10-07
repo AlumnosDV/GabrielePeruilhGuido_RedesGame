@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine.SceneManagement;
 
 namespace RedesGame.Managers
 {
@@ -17,6 +18,11 @@ namespace RedesGame.Managers
         {
             Activated -= activatable.Activate;
             Deactivated -= activatable.Deactivate;
+        }
+
+        public int GetActiveBuildIndexScene()
+        {
+            return SceneManager.GetActiveScene().buildIndex;
         }
 
         public void Deactivate()

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76775155c02ac5243829e358e6131f98, type: 3}
-  m_Name: SmallBulletData
+  m_Name: ShotgunBulletData
   m_EditorClassIdentifier: 
-  <ForceDamage>k__BackingField: 1000
-  <Speed>k__BackingField: 60
+  <ForceDamage>k__BackingField: 1250
+  <Speed>k__BackingField: 40
