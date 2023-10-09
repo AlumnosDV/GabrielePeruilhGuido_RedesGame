@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RedesGame.Player
@@ -10,7 +8,6 @@ namespace RedesGame.Player
 
         private bool _isFirePressed;
         private bool _isJumpPressed;
-        private bool _isChangeWeapon;
 
         private void Start()
         {

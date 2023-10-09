@@ -1,9 +1,5 @@
 using RedesGame.Bullets;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Fusion;
-using System;
 using RedesGame.Player;
 
 namespace RedesGame.Guns

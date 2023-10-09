@@ -1,17 +1,12 @@
 using UnityEngine;
 using Fusion;
 using UnityEngine.SceneManagement;
-using RedesGame.Player;
-using System;
 
 namespace RedesGame.Managers
 {
     public class GameManager : NetworkBehaviour
     {
-
-        [SerializeField] private int _maxPlayersPerGame = 10;
         [SerializeField] private int _minPlayersPerGame = 2;
-
 
         [Networked]
         private int PlayersInGame { get; set; }

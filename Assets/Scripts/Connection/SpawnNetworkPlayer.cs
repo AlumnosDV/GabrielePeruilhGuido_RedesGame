@@ -54,7 +54,7 @@ namespace RedesGame.Player
 
         public void OnSceneLoadDone(NetworkRunner runner) 
         {
-
+            Debug.Log($"OnSceneLoadDone {SceneManager.GetActiveScene().buildIndex != 0}");
             if (SceneManager.GetActiveScene().buildIndex != 0)
             {
                 if (runner.Topology == SimulationConfig.Topologies.Shared)

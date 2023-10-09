@@ -20,7 +20,6 @@ namespace RedesGame.Bullets
             base.Spawned();
             _myRigidBody = GetComponent<NetworkRigidbody2D>();
             _trailRenderer = GetComponent<TrailRenderer>();
-            //ActiveTrailRenderer(false);
         }
 
         private void DestroyBullet()
@@ -46,7 +45,7 @@ namespace RedesGame.Bullets
             if (!Object && !Object.HasStateAuthority) return;
             collision.gameObject.GetComponent<IDamageable>()?.TakeForceDamage(_bulletData.ForceDamage, _myRigidBody.Rigidbody.velocity.normalized);
 
-            Runner.Despawn(Object);
+            DestroyBullet();
         }
     }
 }

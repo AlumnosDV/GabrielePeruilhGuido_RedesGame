@@ -1,5 +1,4 @@
 using RedesGame.Player;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,13 +11,12 @@ namespace RedesGame.Guns
         private List<Gun> _allGuns;
         protected override void Awake()
         {
-            base.Awake();
-            _allGuns = new List<Gun>();
-            
+            itDestroyOnLoad = true;
         }
 
         private void Start()
         {
+            _allGuns = new List<Gun>();
             var gunsInGame = FindObjectsOfType<Gun>().Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun"));
             _allGuns = _allGuns.Concat(gunsInGame).ToList();
         }

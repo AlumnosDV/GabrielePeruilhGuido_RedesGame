@@ -1,11 +1,9 @@
 using Fusion;
 using RedesGame.Guns;
 using RedesGame.Damageables;
-using System;
 using UnityEngine;
 using RedesGame.ExtensionsClass;
 using RedesGame.Managers;
-using System.Collections;
 using System.Linq;
 
 namespace RedesGame.Player
@@ -22,7 +20,7 @@ namespace RedesGame.Player
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
-        [SerializeField] private int _maxLife = 3;
+        [SerializeField] private int _currentLife = 3;
 
         private Gun _myGun;
         public float _checkGunsRadious = 3;
@@ -31,8 +29,6 @@ namespace RedesGame.Player
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
         private bool _playerDead = false;
-        private bool _isFiring;
-        private int _currentLife;
 
         private NetworkInputData _inputs;
 
@@ -44,13 +40,10 @@ namespace RedesGame.Player
 
         private int _currentIndexOfWeapon;
 
-        void Start()
-        {
-            _currentLife = _maxLife;
-        }
 
         public override void Spawned()
         {
+            Debug.Log($"Player Spawned {Runner.LocalPlayer.PlayerId}");
             _myGun = GunHandler.Instance.CreateGun(this);
             _currentIndexOfWeapon = GunHandler.Instance.GetIndexForGun(_myGun);
         }
@@ -142,7 +135,6 @@ namespace RedesGame.Player
         private void RPC_TakeLifeDamage(int lostLife)
         {
             _currentLife -= lostLife;
-            Debug.Log($"Player ID {Runner.LocalPlayer.PlayerId}: Life {_currentLife}");
             transform.position = Extensions.GetRandomSpawnPoint();
             if (_currentLife <= 0)
             {
@@ -154,7 +146,6 @@ namespace RedesGame.Player
         static void OnChangeGun(Changed<PlayerModel> changed)
         {
             var behaviour = changed.Behaviour;
-            Debug.Log($"Changed Weapon Index OfNewWeapon{behaviour.IndexOfNewWeapon}");
             if (behaviour.IndexOfNewWeapon >= 0)
             {
                 GunHandler.Instance.ChangeGun(behaviour,behaviour._currentIndexOfWeapon, behaviour.IndexOfNewWeapon);

@@ -33,6 +33,7 @@ namespace RedesGame.UI
         [ContextMenu("Default Awake")]
         private void Awake()
         {
+            Debug.Log("Awake Menu Principal UI");
             _mainMenuButtons.SetActive(false);
             _creditsScreen.SetActive(false);
             _controlsScreen.SetActive(false);

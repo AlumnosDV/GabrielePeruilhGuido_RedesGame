@@ -1,6 +1,5 @@
 using Fusion;
 using RedesGame.Managers;
-using System;
 using TMPro;
 using UnityEngine;
 
@@ -43,7 +42,6 @@ namespace RedesGame.UI
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         private void OnWiningCondition(object[] obj)
         {
-            Debug.Log("On wining Screen event");
             ScreenManager.Instance.Deactivate();
 
             if ((bool)obj[0])

@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using TMPro;
-using System;
 using RedesGame.Managers;
 using UnityEngine.SceneManagement;
+using System;
 
 namespace RedesGame.Player
 {
@@ -30,7 +28,14 @@ namespace RedesGame.Player
                 transform.name = $"{NickName}_ID_{Object.Id}";
                 EventManager.TriggerEvent("PlayerJoined");
             }
+            EventManager.StartListening("GoToMainMenu", DespawnPlayers);
 
+
+        }
+
+        private void DespawnPlayers(object[] obj)
+        {
+            
         }
 
         static void OnNickNameChanged(Changed<NetworkPlayer> changed)
@@ -53,11 +58,6 @@ namespace RedesGame.Player
         {
             if (player == Object.InputAuthority)
                 Runner.Despawn(Object);
-        }
-        public void PlayerLeft()
-        {
-            Debug.Log($"Object {Object.name} left");
-            Runner.Despawn(Object);
         }
     }
 }
