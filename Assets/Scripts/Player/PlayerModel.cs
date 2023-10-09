@@ -19,12 +19,12 @@ namespace RedesGame.Player
         [SerializeField] private GameObject _canvas;
         [SerializeField] public GameObject PlayerBody;
         [SerializeField] private LayerMask _gunsLayerMask;
-        [SerializeField] private Gun _myGun;
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
         [SerializeField] private int _maxLife = 3;
 
+        private Gun _myGun;
         public float _checkGunsRadious = 3;
         public bool IsJumping = false;
         private bool _isActive = false;
@@ -36,13 +36,8 @@ namespace RedesGame.Player
 
         private NetworkInputData _inputs;
 
-        public event Action<int> OnChangeWeapon = delegate { };
-
         [Networked(OnChanged = nameof(OnDeadChanged))]
         private bool PlayerDead { get; set; }
-
-        //[Networked(OnChanged = nameof(OnChangeGun))]
-        //private bool PlayerChangedWeapon { get; set; }
 
         [Networked(OnChanged = nameof(OnChangeGun))]
         private int IndexOfNewWeapon { get; set; } = -1;
@@ -163,7 +158,6 @@ namespace RedesGame.Player
             if (behaviour.IndexOfNewWeapon >= 0)
             {
                 GunHandler.Instance.ChangeGun(behaviour,behaviour._currentIndexOfWeapon, behaviour.IndexOfNewWeapon);
-                behaviour.OnChangeWeapon(behaviour.IndexOfNewWeapon);
             }
         }
 

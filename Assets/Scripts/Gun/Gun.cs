@@ -26,15 +26,9 @@ namespace RedesGame.Guns
         {
             _targetTransform = player.PlayerBody.transform;
             transform.SetParent(player.PlayerBody.transform);
-            player.OnChangeWeapon += UpdateWeapon;
             SetLayer("Gun");
 
             return this;
-        }
-
-        private void UpdateWeapon(int index)
-        {
-            Debug.Log($"oldGun {index}");
         }
 
         public void UpdatePosition()
@@ -42,27 +36,6 @@ namespace RedesGame.Guns
             transform.position = _targetTransform.position;
             transform.right = _targetTransform.right;
         }
-
-        /*
-        public void SetPosition(PlayerModel target)
-        {
-            transform.SetParent(target.PlayerBody.transform);
-            transform.position = target.PlayerBody.transform.position;
-            SetLayer("Gun");
-        }
-
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RPC_SetPosition(NetworkObject targetObject)
-        {
-            var target = targetObject.GetComponent<PlayerModel>();
-            if (target != null)
-            {
-                transform.SetParent(target.PlayerBody.transform);
-                transform.localPosition = Vector3.zero;
-                SetLayer("Gun");
-            }
-        }
-        */
 
         public void SetLayer(string layerName)
         {
