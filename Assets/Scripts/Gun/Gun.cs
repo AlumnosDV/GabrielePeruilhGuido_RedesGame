@@ -8,7 +8,7 @@ using RedesGame.Player;
 
 namespace RedesGame.Guns
 {
-    public class Gun : NetworkBehaviour
+    public class Gun : MonoBehaviour
     {
         public Bullet BulletPrefab;
         public GameObject FirePoint;
@@ -32,9 +32,9 @@ namespace RedesGame.Guns
             return this;
         }
 
-        private void UpdateWeapon(Gun arg1, Gun arg2)
+        private void UpdateWeapon(int index)
         {
-            Debug.Log($"oldGun {arg1}. NewGun {arg2}");
+            Debug.Log($"oldGun {index}");
         }
 
         public void UpdatePosition()

@@ -41,7 +41,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3212290597062096914}
   - component: {fileID: 1666458282510705300}
-  - component: {fileID: 7308122532217690500}
   m_Layer: 9
   m_Name: Shotgun
   m_TagString: Gun
@@ -77,34 +76,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a191dcd97fb299f4b928d17c34491d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interpolationDataSource: 0
   BulletPrefab: {fileID: 3385327283098194592, guid: 3f2b124932be02f49bb6c50e81431a89, type: 3}
   FirePoint: {fileID: 389149227973413360}
   GunSprite: {fileID: 21300000, guid: 5b970d9bb53275d47a7666c27c9c4bca, type: 3}
---- !u!114 &7308122532217690500
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7478024199394821911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObjectInterest: 1
-  DefaultInterestGroups: []
-  DestroyWhenStateAuthorityLeaves: 0
-  AllowStateAuthorityOverride: 1
-  AoiPositionSource: {fileID: 0}
-  Flags: 2305
-  NetworkGuid:
-    RawGuidValue: 583c725124fb6fd40a6be980263f616e
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1666458282510705300}
-  SimulationBehaviours: []
 --- !u!1 &8211035389771597634
 GameObject:
   m_ObjectHideFlags: 0

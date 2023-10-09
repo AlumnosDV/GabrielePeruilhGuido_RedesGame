@@ -21,31 +21,33 @@ namespace RedesGame.Player
         [SerializeField] private LayerMask _gunsLayerMask;
         [SerializeField] private Gun _myGun;
 
-        [SerializeField] private float _checkGunsRadious;
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
         [SerializeField] private int _maxLife = 3;
 
+        public float _checkGunsRadious = 3;
         public bool IsJumping = false;
         private bool _isActive = false;
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
         private bool _playerDead = false;
-        private bool _isCloseFromGun = false;
         private bool _isFiring;
         private int _currentLife;
-        private Gun _myNewGun;
 
         private NetworkInputData _inputs;
 
-        public event Action<Gun, Gun> OnChangeWeapon = delegate { };
+        public event Action<int> OnChangeWeapon = delegate { };
 
         [Networked(OnChanged = nameof(OnDeadChanged))]
         private bool PlayerDead { get; set; }
 
-        [Networked(OnChanged = nameof(OnChangeGun))]
-        private bool PlayerChangedWeapon { get; set; }
+        //[Networked(OnChanged = nameof(OnChangeGun))]
+        //private bool PlayerChangedWeapon { get; set; }
 
+        [Networked(OnChanged = nameof(OnChangeGun))]
+        private int IndexOfNewWeapon { get; set; } = -1;
+
+        private int _currentIndexOfWeapon;
 
         void Start()
         {
@@ -55,6 +57,7 @@ namespace RedesGame.Player
         public override void Spawned()
         {
             _myGun = GunHandler.Instance.CreateGun(this);
+            _currentIndexOfWeapon = GunHandler.Instance.GetIndexForGun(_myGun);
         }
 
         private void OnEnable()
@@ -92,10 +95,8 @@ namespace RedesGame.Player
                     Jump();
                 }
 
-                if (IsCloseFromGun())
-                {
-                    ChangeGun();
-                }
+                IsCloseFromGun();
+
 
                 Move(_inputs.xMovement);
             }
@@ -155,36 +156,14 @@ namespace RedesGame.Player
             }
         }
 
-        private void ChangeGun()
-        {
-            RPC_ChangeGun();
-        }
-
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        private void RPC_ChangeGun()
-        {
-            //Runner.Despawn(_myGun.GetComponent<NetworkObject>());
-
-            _myGun = _myNewGun;
-
-            PlayerChangedWeapon = true;
-        }
-
         static void OnChangeGun(Changed<PlayerModel> changed)
         {
             var behaviour = changed.Behaviour;
-            
-            if (behaviour._myNewGun != null)
+            Debug.Log($"Changed Weapon Index OfNewWeapon{behaviour.IndexOfNewWeapon}");
+            if (behaviour.IndexOfNewWeapon >= 0)
             {
-                Debug.Log($"OnChangeGun Player Model\nActualGun: {behaviour._myGun.name}\nNew{behaviour._myNewGun.name}");
-                GunHandler.Instance.ChangeGun(behaviour, behaviour._myGun, behaviour._myNewGun);
-                behaviour.OnChangeWeapon(behaviour._myGun, behaviour._myNewGun);
-                behaviour._myGun = behaviour._myNewGun;
-            }
-            else
-            {
-                GunHandler.Instance.ChangeGun(behaviour, behaviour._myGun, behaviour._myGun);
-                behaviour.OnChangeWeapon(behaviour._myGun, behaviour._myGun);
+                GunHandler.Instance.ChangeGun(behaviour,behaviour._currentIndexOfWeapon, behaviour.IndexOfNewWeapon);
+                behaviour.OnChangeWeapon(behaviour.IndexOfNewWeapon);
             }
         }
 
@@ -194,24 +173,20 @@ namespace RedesGame.Player
             EventManager.TriggerEvent("Dead", behaviour._playerDead);
         }
 
-        private bool IsCloseFromGun()
+        private void IsCloseFromGun()
         {
             var guns = FindObjectsOfType<Gun>()
                 .Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun") && Vector2.Distance(transform.position, gun.gameObject.transform.position) <= _checkGunsRadious)
                 .ToArray();
+            if (guns.Length == 0) return;
+            _myGun = guns[0];
+            RPC_ChangeGun(GunHandler.Instance.GetIndexForGun(guns[0]));
+        }
 
-            if (guns.Length > 0)
-            {
-                _isCloseFromGun = true;
-                _myNewGun = guns[0];
-            }
-            else
-            {
-                _isCloseFromGun = false;
-                _myNewGun = null;
-            }
-
-            return _isCloseFromGun;
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_ChangeGun(int newGunIndex)
+        {
+            IndexOfNewWeapon = newGunIndex;          
         }
 
         private void OnDrawGizmos()

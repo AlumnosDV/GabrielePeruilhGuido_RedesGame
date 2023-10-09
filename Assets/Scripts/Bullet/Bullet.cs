@@ -25,12 +25,6 @@ namespace RedesGame.Bullets
 
         private void DestroyBullet()
         {
-            //ActiveTrailRenderer(false);
-            //if (MyBulletPool == null)
-            //    gameObject.SetActive(false);
-            //else
-            //    MyBulletPool.ReturnObject(this);
-
             Runner.Despawn(Object);
         }
 

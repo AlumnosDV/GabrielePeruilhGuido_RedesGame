@@ -1,6 +1,7 @@
 using RedesGame.Player;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RedesGame.Guns
@@ -16,6 +17,12 @@ namespace RedesGame.Guns
             
         }
 
+        private void Start()
+        {
+            var gunsInGame = FindObjectsOfType<Gun>().Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun"));
+            _allGuns = _allGuns.Concat(gunsInGame).ToList();
+        }
+
         public Gun CreateGun(PlayerModel target)
         {
             var gun = Instantiate(_initialGunPrefab, transform).SetTarget(target);
@@ -23,16 +30,22 @@ namespace RedesGame.Guns
             return gun;
         }
 
-        public void ChangeGun(PlayerModel target, Gun oldGun, Gun newGun)
+        public void ChangeGun(PlayerModel target, int oldGunIndex,int newGunIndex)
         {
-            _allGuns.Remove(oldGun);
-            _allGuns.Add(newGun);
-            newGun.SetTarget(target);
+            _allGuns[newGunIndex].SetTarget(target);
+            Destroy(_allGuns[oldGunIndex].gameObject);
+            _allGuns.RemoveAt(oldGunIndex);
+        }
+        
+        public int GetIndexForGun(Gun gunToCheck)
+        {
+            return _allGuns.IndexOf(gunToCheck);
         }
 
         private void LateUpdate()
         {
-            foreach (var gun in _allGuns)
+            var filteredGuns = _allGuns.Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("Gun")).ToList();
+            foreach (var gun in filteredGuns)
             {
                 gun.UpdatePosition();
             }
