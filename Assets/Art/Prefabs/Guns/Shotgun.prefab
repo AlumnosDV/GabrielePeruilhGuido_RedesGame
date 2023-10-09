@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3212290597062096914}
   - component: {fileID: 1666458282510705300}
-  - component: {fileID: 5221929189130142566}
+  - component: {fileID: 7308122532217690500}
   m_Layer: 9
   m_Name: Shotgun
   m_TagString: Gun
@@ -78,9 +78,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  _bulletPrefab: {fileID: 3385327283098194592, guid: 3f2b124932be02f49bb6c50e81431a89, type: 3}
-  _firePoint: {fileID: 389149227973413360}
---- !u!114 &5221929189130142566
+  BulletPrefab: {fileID: 3385327283098194592, guid: 3f2b124932be02f49bb6c50e81431a89, type: 3}
+  FirePoint: {fileID: 389149227973413360}
+  GunSprite: {fileID: 21300000, guid: 5b970d9bb53275d47a7666c27c9c4bca, type: 3}
+--- !u!114 &7308122532217690500
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

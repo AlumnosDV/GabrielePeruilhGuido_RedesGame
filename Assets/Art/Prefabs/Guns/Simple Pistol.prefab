@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3212290597062096914}
   - component: {fileID: 1666458282510705300}
-  - component: {fileID: 5221929189130142566}
+  - component: {fileID: 5383457692374005088}
   m_Layer: 9
   m_Name: Simple Pistol
   m_TagString: Gun
@@ -78,9 +78,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  _bulletPrefab: {fileID: 3385327283098194592, guid: 84260b8e56affb64093fd49b4be500c8, type: 3}
-  _firePoint: {fileID: 389149227973413360}
---- !u!114 &5221929189130142566
+  BulletPrefab: {fileID: 3385327283098194592, guid: 84260b8e56affb64093fd49b4be500c8, type: 3}
+  FirePoint: {fileID: 389149227973413360}
+  GunSprite: {fileID: 21300000, guid: d4bd8909a3d12e84e920a88ce1627f3c, type: 3}
+--- !u!114 &5383457692374005088
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

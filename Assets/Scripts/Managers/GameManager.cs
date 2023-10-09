@@ -29,7 +29,6 @@ namespace RedesGame.Managers
 
         public override void Spawned()
         {
-            Debug.Log("Spawed Game Manager"); 
             ScreenManager.Instance.Deactivate();
             EventManager.StartListening("PlayerJoined", OnPlayerJoined);
             EventManager.StartListening("GoToMainMenu", DespawnPlayers);

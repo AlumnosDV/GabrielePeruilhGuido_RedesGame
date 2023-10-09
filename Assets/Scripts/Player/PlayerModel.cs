@@ -17,10 +17,9 @@ namespace RedesGame.Player
         [SerializeField] private NetworkPlayer _networkPlayer;
 
         [SerializeField] private GameObject _canvas;
-        [SerializeField] private GameObject _playerBody;
+        [SerializeField] public GameObject PlayerBody;
         [SerializeField] private LayerMask _gunsLayerMask;
         [SerializeField] private Gun _myGun;
-        private Gun _myNewGun;
 
         [SerializeField] private float _checkGunsRadious;
         [SerializeField] private float _moveSpeed;
@@ -33,21 +32,29 @@ namespace RedesGame.Player
         private int _currentSign, _previousSign;
         private bool _playerDead = false;
         private bool _isCloseFromGun = false;
+        private bool _isFiring;
+        private int _currentLife;
+        private Gun _myNewGun;
 
         private NetworkInputData _inputs;
 
-        //[Networked(OnChanged = nameof(OnFiringChanged))]
-        private bool _isFiring { get; set; }
-
-        private int Life { get; set; }
+        public event Action<Gun, Gun> OnChangeWeapon = delegate { };
 
         [Networked(OnChanged = nameof(OnDeadChanged))]
         private bool PlayerDead { get; set; }
 
+        [Networked(OnChanged = nameof(OnChangeGun))]
+        private bool PlayerChangedWeapon { get; set; }
+
+
         void Start()
         {
-            Life = _maxLife;
-            _myGun.gameObject.layer = LayerMask.NameToLayer("Gun");
+            _currentLife = _maxLife;
+        }
+
+        public override void Spawned()
+        {
+            _myGun = GunHandler.Instance.CreateGun(this);
         }
 
         private void OnEnable()
@@ -76,7 +83,8 @@ namespace RedesGame.Player
             {
                 if (_inputs.isFirePressed)
                 {
-                    _myGun.Shoot();
+                    var bullet = Runner.Spawn(_myGun.BulletPrefab, _myGun.FirePoint.transform.position);
+                    _myGun.Shoot(bullet);
                 }
 
                 if (_inputs.isJumpPressed && !IsJumping)
@@ -124,14 +132,6 @@ namespace RedesGame.Player
             _networkRigidbody2D.Rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
         }
 
-        //static void OnFiringChanged(Changed<PlayerModel> changed)
-        //{
-        //    var updatedFiring = changed.Behaviour._isFiring;
-        //    changed.LoadOld();
-        //    var oldFiring = changed.Behaviour._isFiring;
-
-        //}
-
         public void TakeForceDamage(float dmg, Vector2 direction)
         {
             _networkRigidbody2D.Rigidbody.AddForce(direction * dmg, ForceMode2D.Force);
@@ -145,16 +145,15 @@ namespace RedesGame.Player
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         private void RPC_TakeLifeDamage(int lostLife)
         {
-            Life -= lostLife;
-            Debug.Log($"Player ID {Runner.LocalPlayer.PlayerId}: Life {Life}");
+            _currentLife -= lostLife;
+            Debug.Log($"Player ID {Runner.LocalPlayer.PlayerId}: Life {_currentLife}");
             transform.position = Extensions.GetRandomSpawnPoint();
-            if (Life <= 0)
+            if (_currentLife <= 0)
             {
                 PlayerDead = true;
                 _playerDead = true;
             }
         }
-
 
         private void ChangeGun()
         {
@@ -164,12 +163,29 @@ namespace RedesGame.Player
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         private void RPC_ChangeGun()
         {
-            Debug.Log("Change Gun");
-            Runner.Despawn(_myGun.GetComponent<NetworkObject>());
-            _myNewGun.gameObject.transform.SetParent(_playerBody.transform);
-            _myNewGun.transform.position = _playerBody.transform.position;
-            _myNewGun.gameObject.layer = LayerMask.NameToLayer("Gun");
+            //Runner.Despawn(_myGun.GetComponent<NetworkObject>());
+
             _myGun = _myNewGun;
+
+            PlayerChangedWeapon = true;
+        }
+
+        static void OnChangeGun(Changed<PlayerModel> changed)
+        {
+            var behaviour = changed.Behaviour;
+            
+            if (behaviour._myNewGun != null)
+            {
+                Debug.Log($"OnChangeGun Player Model\nActualGun: {behaviour._myGun.name}\nNew{behaviour._myNewGun.name}");
+                GunHandler.Instance.ChangeGun(behaviour, behaviour._myGun, behaviour._myNewGun);
+                behaviour.OnChangeWeapon(behaviour._myGun, behaviour._myNewGun);
+                behaviour._myGun = behaviour._myNewGun;
+            }
+            else
+            {
+                GunHandler.Instance.ChangeGun(behaviour, behaviour._myGun, behaviour._myGun);
+                behaviour.OnChangeWeapon(behaviour._myGun, behaviour._myGun);
+            }
         }
 
         static void OnDeadChanged(Changed<PlayerModel> changed)

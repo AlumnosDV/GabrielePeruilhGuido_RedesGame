@@ -65,7 +65,6 @@ namespace RedesGame.Player
                         Quaternion.identity,
                         runner.LocalPlayer);
                     _characterController = localPlayer.GetComponent<NetworkCharacterController>();
-                    Debug.Log("Spawn Object");
                 }
             }
         }
