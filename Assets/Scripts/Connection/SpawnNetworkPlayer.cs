@@ -47,7 +47,7 @@ namespace RedesGame.Player
 
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) 
         {
-            EventManager.TriggerEvent("OnPlayerLeft");
+            Debug.Log("OnPlayerLeft");
         }
 
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }

@@ -16,17 +16,17 @@ namespace RedesGame.Managers
         [Networked(OnChanged = nameof(OnAllPlayersLeft))]
         private bool AllPlayersLeft { get; set; }
 
-        static void OnAllPlayersLeft(Changed<GameManager> changed)
-        {
-            var behaviour = changed.Behaviour;
-            SceneManager.LoadScene("MainMenu");
-        }
 
         public override void Spawned()
         {
             ScreenManager.Instance.Deactivate();
             EventManager.StartListening("PlayerJoined", OnPlayerJoined);
             EventManager.StartListening("GoToMainMenu", DespawnPlayers);
+        }
+        static void OnAllPlayersLeft(Changed<GameManager> changed)
+        {
+            var behaviour = changed.Behaviour;
+            SceneManager.LoadScene("MainMenu");
         }
 
         private void DespawnPlayers(object[] obj)

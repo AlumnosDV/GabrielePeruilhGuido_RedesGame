@@ -5,6 +5,7 @@ using UnityEngine;
 using RedesGame.ExtensionsClass;
 using RedesGame.Managers;
 using System.Linq;
+using System.Collections;
 
 namespace RedesGame.Player
 {
@@ -29,16 +30,17 @@ namespace RedesGame.Player
         private float _moveHorizontal;
         private int _currentSign, _previousSign;
         private bool _playerDead = false;
+        private int _currentIndexOfWeapon;
+        private bool _isFiring;
 
         private NetworkInputData _inputs;
+        private float _lastFiringTime;
 
         [Networked(OnChanged = nameof(OnDeadChanged))]
         private bool PlayerDead { get; set; }
 
         [Networked(OnChanged = nameof(OnChangeGun))]
         private int IndexOfNewWeapon { get; set; } = -1;
-
-        private int _currentIndexOfWeapon;
 
 
         public override void Spawned()
@@ -75,8 +77,11 @@ namespace RedesGame.Player
             {
                 if (_inputs.isFirePressed)
                 {
+                    if (Time.time - _lastFiringTime < 0.15f) return;
+                    _lastFiringTime = Time.time;
                     var bullet = Runner.Spawn(_myGun.BulletPrefab, _myGun.FirePoint.transform.position);
                     _myGun.Shoot(bullet);
+                    StartCoroutine(FiringCooldown());
                 }
 
                 if (_inputs.isJumpPressed && !IsJumping)
@@ -89,6 +94,15 @@ namespace RedesGame.Player
 
                 Move(_inputs.xMovement);
             }
+        }
+
+        IEnumerator FiringCooldown()
+        {
+            _isFiring = true;
+
+            yield return new WaitForSeconds(0.15f);
+
+            _isFiring = false;
         }
 
         void Move(float xAxis)
