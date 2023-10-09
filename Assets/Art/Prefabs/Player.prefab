@@ -751,11 +751,10 @@ MonoBehaviour:
   _gunsLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  _myGun: {fileID: 0}
-  _checkGunsRadious: 1
   _moveSpeed: 100
   _jumpForce: 35
-  _maxLife: 3
+  _currentLife: 3
+  _checkGunsRadious: 1
   IsJumping: 0
 --- !u!114 &3468848899160017911
 MonoBehaviour:
