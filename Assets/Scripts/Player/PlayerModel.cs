@@ -45,7 +45,8 @@ namespace RedesGame.Player
         {
             Debug.Log($"Player Spawned {Runner.LocalPlayer.PlayerId}");
             _myGun = GunHandler.Instance.CreateGun(this);
-            _currentIndexOfWeapon = GunHandler.Instance.GetIndexForGun(_myGun);
+            if(_myGun != null)
+                _currentIndexOfWeapon = GunHandler.Instance.GetIndexForGun(_myGun);
         }
 
         private void OnEnable()

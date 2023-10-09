@@ -7,7 +7,7 @@ using System;
 
 namespace RedesGame.Player
 {
-    public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
+    public class NetworkPlayer : NetworkBehaviour
     {
         public TextMeshProUGUI PlayerNickNameTM;
         public static NetworkPlayer Local { get; private set; }
@@ -28,14 +28,6 @@ namespace RedesGame.Player
                 transform.name = $"{NickName}_ID_{Object.Id}";
                 EventManager.TriggerEvent("PlayerJoined");
             }
-            EventManager.StartListening("GoToMainMenu", DespawnPlayers);
-
-
-        }
-
-        private void DespawnPlayers(object[] obj)
-        {
-            
         }
 
         static void OnNickNameChanged(Changed<NetworkPlayer> changed)
@@ -54,10 +46,9 @@ namespace RedesGame.Player
             this.NickName = nickName;
         }
 
-        public void PlayerLeft(PlayerRef player)
+        public void PlayerLeft()
         {
-            if (player == Object.InputAuthority)
-                Runner.Despawn(Object);
+            Runner.Despawn(Object);
         }
     }
 }
