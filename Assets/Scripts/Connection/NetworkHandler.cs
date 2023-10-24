@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using System.Threading.Tasks;
@@ -9,16 +7,17 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(NetworkSceneManagerDefault))]
 public class NetworkHandler : MonoBehaviour
 {
-    private NetworkRunner _runner;
-    
-    void Start()
-    {
-        _runner = GetComponent<NetworkRunner>();
+    [SerializeField] private NetworkRunner _runner;
 
-        var clientTask = InitializeGame(GameMode.Shared, SceneManager.GetActiveScene().buildIndex);
+    private void Awake()
+    {
+        NetworkRunner networkRunnerInScene = FindObjectOfType<NetworkRunner>();
+
+        if (networkRunnerInScene != null)
+            _runner = networkRunnerInScene;
     }
 
-    Task InitializeGame(GameMode gameMode, SceneRef sceneToLoad)
+    Task InitializeGame(GameMode gameMode, SceneRef sceneToLoad, string sessionName)
     {
         var sceneManager = GetComponent<NetworkSceneManagerDefault>();
 
@@ -28,9 +27,31 @@ public class NetworkHandler : MonoBehaviour
         {
             GameMode = gameMode,
             Scene = sceneToLoad,
-            SessionName = "SessionName",
+            SessionName = sessionName,
+            CustomLobbyName = "OurLobbyId",
             SceneManager = sceneManager
         });
+    }
+
+    public void CreateGame(string sessionName, string sceneName)
+    {
+        var clientTask = InitializeGame(GameMode.Shared, SceneUtility.GetBuildIndexByScenePath($"scenes/{sceneName}"), sessionName);
+    }
+
+    public void JoinGame(SessionInfo sessionInfo)
+    {
+        var clientTask = InitializeGame(GameMode.Shared, SceneManager.GetActiveScene().buildIndex, sessionInfo.Name);
+    }
+
+    public void OnJoinLobby()
+    {
+        var clienteTask = JoinLobby();
+    }
+
+    async Task JoinLobby()
+    {
+        string lobbyId = "OurLobbyId";
+        var result = await _runner.JoinSessionLobby(SessionLobby.Shared, lobbyId);
     }
 
 }

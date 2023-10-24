@@ -1,87 +1,208 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using Fusion;
+using RedesGame.Guns;
+using RedesGame.Damageables;
 using UnityEngine;
+using RedesGame.ExtensionsClass;
+using RedesGame.Managers;
+using System.Linq;
+using System.Collections;
 
-[RequireComponent(typeof(Rigidbody2D))]
-public class PlayerModel : MonoBehaviour
+namespace RedesGame.Player
 {
-    [SerializeField] private Animator _animator;
-    [SerializeField] private float _life;
-    [SerializeField] private float _moveSpeed;
-    [SerializeField] private float _jumpForce;
-    
-    [SerializeField] private Rigidbody2D _myRigidBody;
-    private bool _isJumping = false;
-    private float _moveHorizontal;
-    private float _moveVertical;
-    private int _currentSign, _previousSign;
-
-    private void Awake()
+    public class PlayerModel : NetworkBehaviour, IDamageable, IActivable
     {
-        _myRigidBody = GetComponent<Rigidbody2D>();
-    }
+        [SerializeField] private NetworkMecanimAnimator _netWorkAnimator;
+        [SerializeField] private NetworkRigidbody2D _networkRigidbody2D;
+        [SerializeField] private NetworkPlayer _networkPlayer;
 
-    void Start()
-    {
-        transform.right = Vector2.right;
-    }
+        [SerializeField] private GameObject _canvas;
+        [SerializeField] public GameObject PlayerBody;
+        [SerializeField] private LayerMask _gunsLayerMask;
 
-    void Update()
-    {
-        _moveHorizontal = Input.GetAxis("Horizontal");
-        _moveVertical = Input.GetAxis("Vertical");
-        if (Input.GetKeyDown(KeyCode.W) && !_isJumping)
+        [SerializeField] private float _moveSpeed;
+        [SerializeField] private float _jumpForce;
+        [SerializeField] private int _currentLife = 3;
+
+        private Gun _myGun;
+        public float _checkGunsRadious = 3;
+        public bool IsJumping = false;
+        private bool _isActive = false;
+        private float _moveHorizontal;
+        private int _currentSign, _previousSign;
+        private bool _playerDead = false;
+        private int _currentIndexOfWeapon;
+        private bool _isFiring;
+
+        private NetworkInputData _inputs;
+        private float _lastFiringTime;
+
+        [Networked(OnChanged = nameof(OnDeadChanged))]
+        private bool PlayerDead { get; set; }
+
+        [Networked(OnChanged = nameof(OnChangeGun))]
+        private int IndexOfNewWeapon { get; set; } = -1;
+
+
+        public override void Spawned()
         {
-            Jump();
+            Debug.Log($"Player Spawned {Runner.LocalPlayer.PlayerId}");
+            _myGun = GunHandler.Instance.CreateGun(this);
+            if(_myGun != null)
+                _currentIndexOfWeapon = GunHandler.Instance.GetIndexForGun(_myGun);
         }
-    }
 
-    private void FixedUpdate()
-    {
-        Move();
-    }
-
-    void Move()
-    {
-        if (_moveHorizontal > 0.1f || _moveHorizontal < -0.1f)
+        private void OnEnable()
         {
-            //_myRigiBody.MovePosition(transform.position + Vector3.right * (_moveHoritonzatal * _moveSpeed * Time.fixedDeltaTime));
-            _myRigidBody.AddForce(new Vector2(_moveHorizontal * _moveSpeed, 0f), ForceMode2D.Impulse);
+            ScreenManager.Instance.Subscribe(this);
+            EventManager.StartListening("AllPlayersInGame", OnAllPlayersInGame);
+        }
 
-            _currentSign = (int)Mathf.Sign(_moveHorizontal);
-            Debug.Log(_currentSign);
-            if (_currentSign != _previousSign)
+
+        private void OnDisable()
+        {
+            ScreenManager.Instance.Unsubscribe(this);
+            EventManager.StopListening("AllPlayersInGame", OnAllPlayersInGame);
+        }
+
+        private void OnAllPlayersInGame(object[] obj)
+        {
+            transform.position = Extensions.GetRandomSpawnPoint();
+        }
+
+        public override void FixedUpdateNetwork()
+        {
+            if (!_isActive) return;
+
+            if (GetInput(out _inputs))
             {
-                _previousSign = _currentSign;
+                if (_inputs.isFirePressed)
+                {
+                    if (Time.time - _lastFiringTime < 0.15f) return;
+                    _lastFiringTime = Time.time;
+                    var bullet = Runner.Spawn(_myGun.BulletPrefab, _myGun.FirePoint.transform.position);
+                    _myGun.Shoot(bullet);
+                    StartCoroutine(FiringCooldown());
+                }
 
-                transform.right = Vector2.right * _currentSign;
+                if (_inputs.isJumpPressed && !IsJumping)
+                {
+                    Jump();
+                }
+
+                IsCloseFromGun();
+
+
+                Move(_inputs.xMovement);
             }
-            _animator.SetFloat("HorizontalValue", Mathf.Abs(_moveHorizontal));
         }
-    }
-    
-    void Jump()
-    {
-        Debug.Log(Vector2.up);
-        _myRigidBody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
-    }
-    
 
-    public void TakeDamage(float dmg)
-    {
-        
-    }
+        IEnumerator FiringCooldown()
+        {
+            _isFiring = true;
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Floor"))
-            _isJumping = false;
-    }
+            yield return new WaitForSeconds(0.15f);
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Floor"))
-            _isJumping = true;
+            _isFiring = false;
+        }
+
+        void Move(float xAxis)
+        {
+
+            if (xAxis != 0)
+            {
+                _networkRigidbody2D.Rigidbody.AddForce(new Vector2(xAxis * _moveSpeed, 0f), ForceMode2D.Force);
+
+                _currentSign = (int)Mathf.Sign(xAxis);
+
+                if (_currentSign != _previousSign)
+                {
+                    _previousSign = _currentSign;
+
+                    transform.right = Vector2.right * _currentSign;
+                    _canvas.transform.right = Vector2.right;
+                }
+
+                _netWorkAnimator.Animator.SetFloat("HorizontalValue", Mathf.Abs(xAxis));
+            }
+            else if (_currentSign != 0)
+            {
+                _currentSign = 0;
+                _netWorkAnimator.Animator.SetFloat("HorizontalValue", 0);
+            }
+        }
+
+        void Jump()
+        {
+            _networkRigidbody2D.Rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
+        }
+
+        public void TakeForceDamage(float dmg, Vector2 direction)
+        {
+            _networkRigidbody2D.Rigidbody.AddForce(direction * dmg, ForceMode2D.Force);
+        }
+
+        public void TakeLifeDamage()
+        {
+            RPC_TakeLifeDamage(1);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_TakeLifeDamage(int lostLife)
+        {
+            _currentLife -= lostLife;
+            transform.position = Extensions.GetRandomSpawnPoint();
+            if (_currentLife <= 0)
+            {
+                PlayerDead = true;
+                _playerDead = true;
+            }
+        }
+
+        static void OnChangeGun(Changed<PlayerModel> changed)
+        {
+            var behaviour = changed.Behaviour;
+            if (behaviour.IndexOfNewWeapon >= 0)
+            {
+                GunHandler.Instance.ChangeGun(behaviour,behaviour._currentIndexOfWeapon, behaviour.IndexOfNewWeapon);
+            }
+        }
+
+        static void OnDeadChanged(Changed<PlayerModel> changed)
+        {
+            var behaviour = changed.Behaviour;
+            EventManager.TriggerEvent("Dead", behaviour._playerDead);
+        }
+
+        private void IsCloseFromGun()
+        {
+            var guns = FindObjectsOfType<Gun>()
+                .Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun") && Vector2.Distance(transform.position, gun.gameObject.transform.position) <= _checkGunsRadious)
+                .ToArray();
+            if (guns.Length == 0) return;
+            _myGun = guns[0];
+            RPC_ChangeGun(GunHandler.Instance.GetIndexForGun(guns[0]));
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_ChangeGun(int newGunIndex)
+        {
+            IndexOfNewWeapon = newGunIndex;          
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(transform.position, _checkGunsRadious);
+        }
+
+        public void Activate()
+        {
+            _isActive = true;
+        }
+
+        public void Deactivate()
+        {
+            _isActive = false;
+        }
     }
 }
