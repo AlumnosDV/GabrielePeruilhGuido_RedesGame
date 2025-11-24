@@ -100,7 +100,7 @@ namespace RedesGame.UI
         private void OnMatchEnded(object[] obj)
         {
             var winner = (PlayerRef)obj[0];
-            var isWinner = NetworkPlayer.Local != null && NetworkPlayer.Local.Object.InputAuthority == winner;
+            var isWinner = Player.NetworkPlayer.Local != null && Player.NetworkPlayer.Local.Object.InputAuthority == winner;
 
             _waitingScreen.SetActive(false);
             _matchResult?.gameObject.SetActive(true);
@@ -121,10 +121,10 @@ namespace RedesGame.UI
 
         public void ToggleReady()
         {
-            if (NetworkPlayer.Local == null)
+            if (Player.NetworkPlayer.Local == null)
                 return;
 
-            var model = NetworkPlayer.Local.GetComponent<PlayerModel>();
+            var model = Player.NetworkPlayer.Local.GetComponent<PlayerModel>();
             if (model == null)
                 return;
 
