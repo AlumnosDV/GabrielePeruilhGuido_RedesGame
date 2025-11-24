@@ -10,12 +10,12 @@ namespace RedesGame.Managers
     {
         [SerializeField] private int _minPlayersPerGame = 2;
 
-        [Networked]
+        [Networked(OnChanged = nameof(OnPlayersInGameChanged))]
         private int PlayersInGame { get; set; }
         [Networked]
         private float Timer { get; set; }
 
-        [Networked]
+        [Networked(OnChanged = nameof(OnReadyPlayersChanged))]
         private int ReadyPlayers { get; set; }
 
         [Networked]
@@ -67,7 +67,7 @@ namespace RedesGame.Managers
                 _playerReadyState.Add(player, false);
             }
 
-            EventManager.TriggerEvent("ReadyStatusChanged", ReadyPlayers, PlayersInGame, _minPlayersPerGame);
+            BroadcastReadyStatus();
 
             if (PlayersInGame >= _minPlayersPerGame)
                 EventManager.TriggerEvent("AllPlayersInGame");
@@ -92,7 +92,7 @@ namespace RedesGame.Managers
             ReadyPlayers += newStateValue - previousStateValue;
 
             EvaluateMatchStart();
-            EventManager.TriggerEvent("ReadyStatusChanged", ReadyPlayers, PlayersInGame, _minPlayersPerGame);
+            BroadcastReadyStatus();
         }
 
         private void EvaluateMatchStart()
@@ -144,6 +144,18 @@ namespace RedesGame.Managers
             ScreenManager.Instance.Deactivate();
         }
 
+        static void OnPlayersInGameChanged(Changed<GameManager> changed)
+        {
+            var behaviour = changed.Behaviour;
+            behaviour.BroadcastReadyStatus();
+        }
+
+        static void OnReadyPlayersChanged(Changed<GameManager> changed)
+        {
+            var behaviour = changed.Behaviour;
+            behaviour.BroadcastReadyStatus();
+        }
+
 
         public override void FixedUpdateNetwork()
         {
@@ -151,6 +163,11 @@ namespace RedesGame.Managers
                 Timer += Runner.DeltaTime;
 
             EventManager.TriggerEvent("UpdateTimer", FormatDate(Timer));
+        }
+
+        private void BroadcastReadyStatus()
+        {
+            EventManager.TriggerEvent("ReadyStatusChanged", ReadyPlayers, PlayersInGame, _minPlayersPerGame);
         }
 
         private string FormatDate(float myTime)
