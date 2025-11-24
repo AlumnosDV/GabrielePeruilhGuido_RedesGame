@@ -58,8 +58,8 @@ namespace RedesGame.Managers
 
         private void OnPlayerJoined(object[] obj)
         {
-
-            PlayersInGame++;
+            if (!Object.HasStateAuthority)
+                return;
 
             var player = (PlayerRef)obj[0];
             if (!_playerReadyState.ContainsKey(player))
@@ -67,7 +67,7 @@ namespace RedesGame.Managers
                 _playerReadyState.Add(player, false);
             }
 
-            BroadcastReadyStatus();
+            RecalculateCounts();
 
             if (PlayersInGame >= _minPlayersPerGame)
                 EventManager.TriggerEvent("AllPlayersInGame");
@@ -87,12 +87,9 @@ namespace RedesGame.Managers
 
             _playerReadyState[player] = ready;
 
-            var newStateValue = ready ? 1 : 0;
-            var previousStateValue = hadEntry && wasReady ? 1 : 0;
-            ReadyPlayers += newStateValue - previousStateValue;
+            RecalculateCounts();
 
             EvaluateMatchStart();
-            BroadcastReadyStatus();
         }
 
         private void EvaluateMatchStart()
@@ -168,6 +165,14 @@ namespace RedesGame.Managers
         private void BroadcastReadyStatus()
         {
             EventManager.TriggerEvent("ReadyStatusChanged", ReadyPlayers, PlayersInGame, _minPlayersPerGame);
+        }
+
+        private void RecalculateCounts()
+        {
+            PlayersInGame = Runner.ActivePlayers.Count();
+            ReadyPlayers = _playerReadyState.Count(kv => kv.Value);
+
+            BroadcastReadyStatus();
         }
 
         private string FormatDate(float myTime)
