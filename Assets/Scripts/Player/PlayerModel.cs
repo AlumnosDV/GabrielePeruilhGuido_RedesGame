@@ -225,7 +225,7 @@ namespace RedesGame.Player
             RPC_SetReadyState(!_isReady);
         }
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
         private void RPC_SetReadyState(bool newReadyState, RpcInfo info = default)
         {
             _isReady = newReadyState;

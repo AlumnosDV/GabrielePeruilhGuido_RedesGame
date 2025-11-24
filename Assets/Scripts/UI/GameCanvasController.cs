@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using RedesGame.Player;
+using NetworkPlayer = RedesGame.Player.NetworkPlayer;
 
 namespace RedesGame.UI
 {

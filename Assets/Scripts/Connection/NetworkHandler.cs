@@ -28,7 +28,6 @@ public class NetworkHandler : MonoBehaviour
             GameMode = gameMode,
             Scene = sceneToLoad,
             SessionName = sessionName,
-            SessionLobby = SessionLobby.Custom,
             CustomLobbyName = "OurLobbyId",
             SceneManager = sceneManager
         });

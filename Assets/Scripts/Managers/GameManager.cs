@@ -75,6 +75,7 @@ namespace RedesGame.Managers
 
         private void OnPlayerReadyChanged(object[] obj)
         {
+            Debug.Log($"OnPlayerReadyChanged {(bool)obj[1]} {(PlayerRef)obj[0]}");
             if (!Object.HasStateAuthority)
                 return;
 
