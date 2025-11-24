@@ -6,6 +6,7 @@ using RedesGame.ExtensionsClass;
 using RedesGame.Managers;
 using System.Linq;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 namespace RedesGame.Player
 {
@@ -32,6 +33,7 @@ namespace RedesGame.Player
         private bool _playerDead = false;
         private int _currentIndexOfWeapon;
         private bool _isFiring;
+        private bool _isReady;
 
         private NetworkInputData _inputs;
         private float _lastFiringTime;
@@ -55,6 +57,7 @@ namespace RedesGame.Player
         {
             ScreenManager.Instance.Subscribe(this);
             EventManager.StartListening("AllPlayersInGame", OnAllPlayersInGame);
+            EventManager.StartListening("MatchStarted", OnMatchStarted);
         }
 
 
@@ -62,9 +65,16 @@ namespace RedesGame.Player
         {
             ScreenManager.Instance.Unsubscribe(this);
             EventManager.StopListening("AllPlayersInGame", OnAllPlayersInGame);
+            EventManager.StopListening("MatchStarted", OnMatchStarted);
         }
 
         private void OnAllPlayersInGame(object[] obj)
+        {
+            // Allow players to ready up once the lobby has enough people
+            _isReady = false;
+        }
+
+        private void OnMatchStarted(object[] obj)
         {
             transform.position = Extensions.GetRandomSpawnPoint();
         }
@@ -155,6 +165,7 @@ namespace RedesGame.Player
             {
                 PlayerDead = true;
                 _playerDead = true;
+                EventManager.TriggerEvent("PlayerEliminated", Object.InputAuthority);
             }
         }
 
@@ -170,7 +181,8 @@ namespace RedesGame.Player
         static void OnDeadChanged(Changed<PlayerModel> changed)
         {
             var behaviour = changed.Behaviour;
-            EventManager.TriggerEvent("Dead", behaviour._playerDead);
+            var isLocal = behaviour.Object.HasInputAuthority;
+            EventManager.TriggerEvent("Dead", isLocal);
         }
 
         private void IsCloseFromGun()
@@ -203,6 +215,21 @@ namespace RedesGame.Player
         public void Deactivate()
         {
             _isActive = false;
+        }
+
+        public void ToggleReadyState()
+        {
+            if (SceneManager.GetActiveScene().name == "MainMenu")
+                return;
+
+            RPC_SetReadyState(!_isReady);
+        }
+
+        [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+        private void RPC_SetReadyState(bool newReadyState, RpcInfo info = default)
+        {
+            _isReady = newReadyState;
+            EventManager.TriggerEvent("PlayerReadyChanged", info.Source, newReadyState);
         }
     }
 }

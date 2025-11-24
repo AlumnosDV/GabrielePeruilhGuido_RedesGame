@@ -51,7 +51,7 @@ public class NetworkHandler : MonoBehaviour
     async Task JoinLobby()
     {
         string lobbyId = "OurLobbyId";
-        var result = await _runner.JoinSessionLobby(SessionLobby.Shared, lobbyId);
+        var result = await _runner.JoinSessionLobby(SessionLobby.Custom, lobbyId);
     }
 
 }
