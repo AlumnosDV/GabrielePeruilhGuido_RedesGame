@@ -23,7 +23,9 @@ namespace RedesGame.UI.Sessions
             _sessionNameText.text = sessionInfo.Name;
             _playerCountText.text = $"{sessionInfo.PlayerCount}/{sessionInfo.MaxPlayers}";
 
-            _joinButton.gameObject.SetActive(sessionInfo.PlayerCount >= sessionInfo.MaxPlayers);
+            bool hasRoomAvailable = sessionInfo.PlayerCount < sessionInfo.MaxPlayers;
+            _joinButton.gameObject.SetActive(true);
+            _joinButton.interactable = hasRoomAvailable;
         }
 
         public void OnClick()

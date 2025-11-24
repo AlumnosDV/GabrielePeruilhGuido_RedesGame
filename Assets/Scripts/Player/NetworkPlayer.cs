@@ -26,7 +26,7 @@ namespace RedesGame.Player
                 }
 
                 transform.name = $"{NickName}_ID_{Object.Id}";
-                EventManager.TriggerEvent("PlayerJoined");
+                EventManager.TriggerEvent("PlayerJoined", Object.InputAuthority);
             }
         }
 
