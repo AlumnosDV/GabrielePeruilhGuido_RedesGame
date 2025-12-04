@@ -13,6 +13,7 @@ namespace RedesGame.Bullets
         private NetworkRigidbody2D _myRigidBody;
         private TrailRenderer _trailRenderer;
         private GameObject _shooter;
+        private bool _canHandleCollisions;
 
 
         public override void Spawned()
@@ -20,6 +21,15 @@ namespace RedesGame.Bullets
             base.Spawned();
             _myRigidBody = GetComponent<NetworkRigidbody2D>();
             _trailRenderer = GetComponent<TrailRenderer>();
+            _canHandleCollisions = false;
+        }
+
+        public override void FixedUpdateNetwork()
+        {
+            if (!_canHandleCollisions)
+            {
+                _canHandleCollisions = true;
+            }
         }
 
         private void DestroyBullet()
@@ -41,8 +51,9 @@ namespace RedesGame.Bullets
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
+            if (!_canHandleCollisions) return;
             if (_shooter == collision.gameObject) return;
-            if (!Object && !Object.HasStateAuthority) return;
+            if (!Object || !Object.HasStateAuthority) return;
             collision.gameObject.GetComponent<IDamageable>()?.TakeForceDamage(_bulletData.ForceDamage, _myRigidBody.Rigidbody.velocity.normalized);
 
             DestroyBullet();
