@@ -43,6 +43,17 @@ namespace RedesGame.UI
             EventManager.StartListening("MatchStarted", OnMatchStarted);
             EventManager.StartListening("ReadyStatusChanged", OnReadyStatusChanged);
             EventManager.StartListening("MatchEnded", OnMatchEnded);
+
+            // Refrescar estado inicial desde GameManager
+            var gm = FindObjectOfType<RedesGame.Managers.GameManager>();
+            if (gm != null)
+            {
+                UpdateReadyStatus(
+                    gm.CurrentReadyPlayers,
+                    gm.CurrentPlayersInGame,
+                    gm.MinPlayersPerGame
+                );
+            }
         }
 
 

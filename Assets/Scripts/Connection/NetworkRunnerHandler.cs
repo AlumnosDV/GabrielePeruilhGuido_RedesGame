@@ -43,6 +43,7 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     {
 
         int sceneIndex = SceneUtility.GetBuildIndexByScenePath($"Scenes/{sceneName}");
+        Debug.Log($"{sceneIndex} / {sceneName}");
         InitializeGame(GameMode.Shared, sessionName, sceneIndex);
     }
 
@@ -71,7 +72,7 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
             _runner.AddCallbacks(_spawnNetworkPlayer);
         }
 
-        var result = await _runner.JoinSessionLobby(SessionLobby.Custom, LOBBY_NAME);
+        var result = await _runner.JoinSessionLobby(SessionLobby.Shared, LOBBY_NAME);
 
         if (!result.Ok)
         {
@@ -142,4 +143,9 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) {}
+
+    public void OnDisconnectedFromServer(NetworkRunner runner)
+    {
+        throw new NotImplementedException();
+    }
 }

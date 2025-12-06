@@ -36,7 +36,9 @@ namespace RedesGame.Managers
         private readonly Dictionary<PlayerRef, bool> _playerReadyState = new();
         private HashSet<PlayerRef> _alivePlayers = new();
 
-
+        public int CurrentPlayersInGame => PlayersInGame;
+        public int CurrentReadyPlayers => ReadyPlayers;
+        public int MinPlayersPerGame => _minPlayersPerGame;
         public override void Spawned()
         {
             ScreenManager.Instance.Deactivate();

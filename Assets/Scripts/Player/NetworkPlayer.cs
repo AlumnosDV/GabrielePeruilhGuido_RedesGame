@@ -1,6 +1,8 @@
 using System;
 using Fusion;
+using RedesGame.Managers;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace RedesGame.Player
 {
@@ -20,26 +22,18 @@ namespace RedesGame.Player
 
         public override void Spawned()
         {
-            if (IsLocal)
+            if (SceneManager.GetActiveScene().name != "MainMenu")
             {
-                Local = this;
+                if (Object.HasInputAuthority)
+                {
+                    Local = this;
+                    RPC_SetNickName(PlayerPrefs.GetString("PlayerNickName"));
+                }
 
-                var nick = PlayerPrefs.GetString(
-                    "PlayerNickName",
-                    $"Player_{UnityEngine.Random.Range(100000000, 999999999)}"
-                );
-
-                if (string.IsNullOrWhiteSpace(nick))
-                    nick = $"Player_{UnityEngine.Random.Range(100000000, 999999999)}";
-
-                if (nick.Length > 16)
-                    nick = nick.Substring(0, 16);
-
-                RPC_SetNickName(nick);
+                // Nombre provisorio SIN usar NickName
+                transform.name = $"Player_ID_{Object.Id}";
+                EventManager.TriggerEvent("PlayerJoined", Object.InputAuthority);
             }
-
-            // El nombre del GameObject es solo una ayuda de debug
-            UpdateGameObjectName();
         }
 
         // ------- Nickname -------
