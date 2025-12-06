@@ -1,54 +1,71 @@
-using UnityEngine;
-using Fusion;
-using TMPro;
-using RedesGame.Managers;
-using UnityEngine.SceneManagement;
 using System;
+using Fusion;
+using UnityEngine;
 
 namespace RedesGame.Player
 {
     public class NetworkPlayer : NetworkBehaviour
     {
-        public TextMeshProUGUI PlayerNickNameTM;
+        // Referencia al jugador local
         public static NetworkPlayer Local { get; private set; }
 
+        // Evento local (no se sincroniza en red) para que otros scripts reaccionen
+        public event Action<NetworkPlayer> NickNameChanged;
+
         [Networked(OnChanged = nameof(OnNickNameChanged))]
-        public NetworkString<_16> NickName { get; set; }
+        public NetworkString<_16> NickName { get; private set; }
+
+        public bool IsLocal => Object != null && Object.HasInputAuthority;
+        public bool IsStateAuthority => Object != null && Object.HasStateAuthority;
 
         public override void Spawned()
         {
-            if (SceneManager.GetActiveScene().name != "MainMenu")
+            if (IsLocal)
             {
-                if (Object.HasInputAuthority)
-                {
-                    Local = this;
-                    RPC_SetNickName(PlayerPrefs.GetString("PlayerNickName"));
-                }
-
-                transform.name = $"{NickName}_ID_{Object.Id}";
-                EventManager.TriggerEvent("PlayerJoined", Object.InputAuthority);
+                Local = this;
             }
+
+            // El nombre del GameObject es solo una ayuda de debug
+            UpdateGameObjectName();
         }
 
-        static void OnNickNameChanged(Changed<NetworkPlayer> changed)
-        {
-            changed.Behaviour.OnNickNameChanged();
-        }
-
-        private void OnNickNameChanged()
-        {
-            PlayerNickNameTM.text = NickName.ToString();
-        }
+        // ------- Nickname -------
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
         public void RPC_SetNickName(string nickName, RpcInfo info = default)
         {
-            this.NickName = nickName;
+            NickName = nickName;
         }
 
-        public void PlayerLeft()
+        private static void OnNickNameChanged(Changed<NetworkPlayer> changed)
         {
-            Runner.Despawn(Object);
+            changed.Behaviour.HandleNickNameChanged();
+        }
+
+        private void HandleNickNameChanged()
+        {
+            UpdateGameObjectName();
+            NickNameChanged?.Invoke(this);
+        }
+
+        private void UpdateGameObjectName()
+        {
+            transform.name = $"{NickName}_ID_{Object.Id}";
+        }
+
+        // ------- Ciclo de vida -------
+
+        public void Despawn()
+        {
+            if (IsStateAuthority && Runner != null && Object != null)
+            {
+                Runner.Despawn(Object);
+            }
+            else
+            {
+                // Opcional: warning de debug
+                Debug.LogWarning($"[NetworkPlayer] Intento de Despawn sin StateAuthority en {name}");
+            }
         }
     }
 }

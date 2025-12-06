@@ -38,8 +38,9 @@ namespace RedesGame.Guns
         public Gun CreateGun(PlayerModel target)
         {
             if (_initialGunPrefab == null) return default;
-            
-            var gun = Instantiate(_initialGunPrefab, transform).SetTarget(target);
+
+            var gun = Instantiate(_initialGunPrefab, target.PlayerBody.transform);
+            gun.SetTarget(target);
             _allGuns.Add(gun);
             return gun;
         }

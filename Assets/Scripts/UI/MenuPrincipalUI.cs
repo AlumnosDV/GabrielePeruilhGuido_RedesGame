@@ -10,7 +10,7 @@ namespace RedesGame.UI
 {
     public class MenuPrincipalUI : MonoBehaviour
     {
-        [SerializeField] private NetworkHandler _networkHandler;
+        [SerializeField] private NetworkRunnerHandler _networkHandler;
         [SerializeField] private SessionListUIHandler _sessionListUIHandler;
 
         [Header("Player Settings")]

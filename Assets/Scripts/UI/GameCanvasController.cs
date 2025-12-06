@@ -27,7 +27,10 @@ namespace RedesGame.UI
             _winConditionScreen.SetActive(false);
             _loseConditionScreen.SetActive(false);
             _waitingScreen.SetActive(true);
-            ScreenManager.Instance.Deactivate();
+
+            if (ScreenManager.Instance != null)
+                ScreenManager.Instance.Deactivate();
+
             UpdateReadyStatus(0, 0, 0);
         }
 
@@ -56,19 +59,28 @@ namespace RedesGame.UI
 
         private void OnWiningCondition(object[] obj)
         {
-            ScreenManager.Instance.Deactivate();
-            if ((bool)obj[0])
-            {
-                _loseConditionScreen.SetActive(true);
-            }
+            bool isLocalDead = (bool)obj[0];
+
+            if (!isLocalDead)
+                return;
+
+            if (ScreenManager.Instance != null)
+                ScreenManager.Instance.Deactivate();
+
+            _loseConditionScreen.SetActive(true);
         }
 
         private void OnAllPlayersInGame(object[] obj)
         {
             _waitingScreen.SetActive(true);
+
             if (_readyButton != null)
                 _readyButton.gameObject.SetActive(true);
-            ScreenManager.Instance.Deactivate();
+
+            UpdateReadyStatus(0, 0, 0);
+
+            if (ScreenManager.Instance != null)
+                ScreenManager.Instance.Deactivate();
         }
 
         private void OnUpdateTimer(object[] obj)
@@ -100,24 +112,24 @@ namespace RedesGame.UI
 
         private void OnMatchEnded(object[] obj)
         {
+            if (obj.Length < 1 || NetworkPlayer.Local == null)
+                return;
+
             var winner = (PlayerRef)obj[0];
-            var isWinner = NetworkPlayer.Local != null && NetworkPlayer.Local.Object.InputAuthority == winner;
+            var isWinner = NetworkPlayer.Local.Object.InputAuthority == winner;
 
             _waitingScreen.SetActive(false);
-            _matchResult?.gameObject.SetActive(true);
+
             if (_matchResult != null)
             {
+                _matchResult.gameObject.SetActive(true);
                 _matchResult.text = isWinner ? "You Won!" : "You Lost";
             }
 
             if (isWinner)
-            {
                 _winConditionScreen.SetActive(true);
-            }
             else
-            {
                 _loseConditionScreen.SetActive(true);
-            }
         }
 
         public void ToggleReady()

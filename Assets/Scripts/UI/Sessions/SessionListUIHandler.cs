@@ -7,7 +7,7 @@ namespace RedesGame.UI.Sessions
 {
     public class SessionListUIHandler : MonoBehaviour
     {
-        [SerializeField] private NetworkHandler _networkHandler;
+        [SerializeField] private NetworkRunnerHandler _networkHandler;
         [SerializeField] private MenuPrincipalUI _menuPrincipalUI;
         [Header("Canvas Items")]
         [SerializeField] private TextMeshProUGUI _statusText;

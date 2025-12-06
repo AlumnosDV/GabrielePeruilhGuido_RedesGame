@@ -45,14 +45,38 @@ namespace RedesGame.Managers
             EventManager.StartListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StartListening("PlayerEliminated", OnPlayerEliminated);
         }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            EventManager.StopListening("PlayerJoined", OnPlayerJoined);
+            EventManager.StopListening("GoToMainMenu", DespawnPlayers);
+            EventManager.StopListening("PlayerReadyChanged", OnPlayerReadyChanged);
+            EventManager.StopListening("PlayerEliminated", OnPlayerEliminated);
+        }
+
+
+
         static void OnAllPlayersLeft(Changed<GameManager> changed)
         {
             var behaviour = changed.Behaviour;
+
+            if (!behaviour.AllPlayersLeft)
+                return;
+
+            var runner = behaviour.Runner;
+            if (runner != null && runner.IsRunning)
+            {
+                runner.Shutdown();
+            }
+
             SceneManager.LoadScene("MainMenu");
         }
 
         private void DespawnPlayers(object[] obj)
         {
+            if (!Object.HasStateAuthority)
+                return;
+
             AllPlayersLeft = true;
         }
 
@@ -105,10 +129,11 @@ namespace RedesGame.Managers
                 return;
 
             MatchStarted = true;
-            AlivePlayers = PlayersInGame;
             _alivePlayers = new HashSet<PlayerRef>(_playerReadyState
                 .Where(kv => kv.Value)
                 .Select(kv => kv.Key));
+
+            AlivePlayers = _alivePlayers.Count;
         }
 
         private void OnPlayerEliminated(object[] obj)
@@ -154,13 +179,36 @@ namespace RedesGame.Managers
             behaviour.BroadcastReadyStatus();
         }
 
+        private void OnPlayerLeft(object[] obj)
+        {
+            if (!Object.HasStateAuthority)
+                return;
+
+            var player = (PlayerRef)obj[0];
+
+            _playerReadyState.Remove(player);
+            _alivePlayers.Remove(player);
+
+            RecalculateCounts();
+
+            if (MatchStarted && !MatchEnded)
+            {
+                // Si se va alguien en medio de la partida, lo tratás como eliminado
+                if (AlivePlayers > 0 && _alivePlayers.Count == 1)
+                {
+                    Winner = _alivePlayers.First();
+                    MatchEnded = true;
+                }
+            }
+        }
 
         public override void FixedUpdateNetwork()
         {
             if (Object.HasStateAuthority)
+            {
                 Timer += Runner.DeltaTime;
-
-            EventManager.TriggerEvent("UpdateTimer", FormatDate(Timer));
+                EventManager.TriggerEvent("UpdateTimer", FormatDate(Timer));
+            }
         }
 
         private void BroadcastReadyStatus()

@@ -11,15 +11,20 @@ namespace RedesGame.Guns
         public Sprite GunSprite;
 
         private Transform _targetTransform;
+        private PlayerModel _owner;
 
         public void Shoot(Bullet bullet)
         {
-            bullet.transform.up = transform.right;
-            bullet.Launch(transform.right, gameObject);
+            // Dirección hacia donde mira el arma
+            Vector2 dir = transform.right;
+            bullet.transform.position = FirePoint.transform.position;
+            bullet.transform.up = dir;
+            bullet.Launch(dir, _owner);
         }
 
         public Gun SetTarget(PlayerModel player)
         {
+            _owner = player;
             _targetTransform = player.PlayerBody.transform;
             transform.SetParent(player.PlayerBody.transform);
             SetLayer("Gun");
@@ -29,6 +34,9 @@ namespace RedesGame.Guns
 
         public void UpdatePosition()
         {
+            if (_targetTransform == null)
+                return;
+
             transform.position = _targetTransform.position;
             transform.right = _targetTransform.right;
         }
@@ -37,6 +45,5 @@ namespace RedesGame.Guns
         {
             gameObject.layer = LayerMask.NameToLayer(layerName);
         }
-
     }
 }
