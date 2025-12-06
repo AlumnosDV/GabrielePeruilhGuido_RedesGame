@@ -45,27 +45,43 @@ namespace RedesGame.Player
 
         public void OnSceneLoadDone(NetworkRunner runner)
         {
+            HandleSceneLoaded(runner);
+        }
+
+        public void OnSceneLoadDone(NetworkRunner runner, SceneRef scene, SceneRef? prevScene)
+        {
+            HandleSceneLoaded(runner);
+        }
+
+        private void HandleSceneLoaded(NetworkRunner runner)
+        {
             Debug.Log($"[SpawnNetworkPlayer] OnSceneLoadDone, scene index: {SceneManager.GetActiveScene().buildIndex}");
 
             // asumo que scene 0 es MainMenu y el resto son escenas de juego
             if (SceneManager.GetActiveScene().buildIndex == 0)
                 return;
 
-            if (runner.Topology == SimulationConfig.Topologies.Shared)
+            if (runner.Topology != SimulationConfig.Topologies.Shared)
+                return;
+
+            if (runner.TryGetPlayerObject(runner.LocalPlayer, out _))
             {
-                var spawnPos = Extensions.GetRandomSpawnPoint();
-
-                var localPlayerObj = runner.Spawn(
-                    _playerPrefab,
-                    spawnPos,
-                    Quaternion.identity,
-                    runner.LocalPlayer
-                );
-
-                // El PlayerController vive dentro del prefab, se va a encargar del movimiento.
-                // Acá solo nos interesa el input handler, que ya buscamos vía NetworkPlayer.Local.
-                Debug.Log("[SpawnNetworkPlayer] Local player spawned");
+                Debug.Log("[SpawnNetworkPlayer] Local player already spawned, skipping duplicate spawn");
+                return;
             }
+
+            var spawnPos = Extensions.GetRandomSpawnPoint();
+
+            runner.Spawn(
+                _playerPrefab,
+                spawnPos,
+                Quaternion.identity,
+                runner.LocalPlayer
+            );
+
+            // El PlayerController vive dentro del prefab, se va a encargar del movimiento.
+            // Acá solo nos interesa el input handler, que ya buscamos vía NetworkPlayer.Local.
+            Debug.Log("[SpawnNetworkPlayer] Local player spawned");
         }
 
         // ---------- SESIONES / UI ----------
@@ -115,6 +131,5 @@ namespace RedesGame.Player
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
-        public void OnSceneLoadDone(NetworkRunner runner, SceneRef scene, SceneRef? prevScene) { } // si usás overloads nuevos, ajustamos
     }
 }

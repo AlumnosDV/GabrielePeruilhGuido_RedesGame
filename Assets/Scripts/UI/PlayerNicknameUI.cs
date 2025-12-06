@@ -19,8 +19,6 @@ namespace RedesGame.Player
             if (_networkPlayer != null)
             {
                 _networkPlayer.NickNameChanged += OnNickNameChanged;
-                // Refrescar por si ya tenía un valor
-                OnNickNameChanged(_networkPlayer);
             }
         }
 
