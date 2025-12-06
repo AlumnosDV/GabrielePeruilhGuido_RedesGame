@@ -14,6 +14,7 @@ namespace RedesGame.Player
         private NetworkRigidbody2D _rb;
         private Collider2D _collider;
         private PlayerModel _playerModel;
+        private Collider2D _currentPlatformCollider;
 
         private bool _fallingThrough;
         private float _fallThroughTimer;
@@ -47,7 +48,7 @@ namespace RedesGame.Player
             if (input.Buttons.IsSet(MyButtons.Jump) && IsGrounded())
             {
                 vel.y = jumpForce;
-                SetGrounded(false); 
+                SetGrounded(false);
             }
 
             // --- FALL THROUGH ---
@@ -61,7 +62,7 @@ namespace RedesGame.Player
             rb.velocity = vel;
 
             // --- FIRE ---
-            // PlayerModel lo captura también porque leen el mismo input.
+            // PlayerModel lo captura tambiÃ©n porque leen el mismo input.
         }
 
 
@@ -71,14 +72,17 @@ namespace RedesGame.Player
             if (_fallingThrough)
                 return;
 
+            if (!_isGrounded)
+                return;
+
+            if (!TryGetPlatformBelow(out var platformCollider))
+                return;
+
             _fallingThrough = true;
             _fallThroughTimer = fallThroughDuration;
 
-            Physics2D.IgnoreLayerCollision(
-                LayerMask.NameToLayer("Player"),
-                LayerMask.NameToLayer("Platform"),
-                true
-            );
+            _currentPlatformCollider = platformCollider;
+            Physics2D.IgnoreCollision(_collider, _currentPlatformCollider, true);
         }
 
         private void UpdateFallThrough()
@@ -92,12 +96,35 @@ namespace RedesGame.Player
             {
                 _fallingThrough = false;
 
-                Physics2D.IgnoreLayerCollision(
-                    LayerMask.NameToLayer("Player"),
-                    LayerMask.NameToLayer("Platform"),
-                    false
-                );
+                RestorePlatformCollision();
             }
+        }
+
+        private bool TryGetPlatformBelow(out Collider2D platformCollider)
+        {
+            Vector2 origin = _collider.bounds.center;
+            float rayDistance = _collider.bounds.extents.y + 0.1f;
+            int platformLayerMask = LayerMask.GetMask("Platform");
+
+            RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayDistance, platformLayerMask);
+            if (hit.collider != null)
+            {
+                platformCollider = hit.collider;
+                return true;
+            }
+
+            platformCollider = null;
+            return false;
+        }
+
+        private void RestorePlatformCollision()
+        {
+            if (_collider != null && _currentPlatformCollider != null)
+            {
+                Physics2D.IgnoreCollision(_collider, _currentPlatformCollider, false);
+            }
+
+            _currentPlatformCollider = null;
         }
         #endregion
 
@@ -112,5 +139,17 @@ namespace RedesGame.Player
             return _isGrounded;
         }
         #endregion
+
+        private void OnDisable()
+        {
+            RestorePlatformCollision();
+            _fallingThrough = false;
+        }
+
+        private void OnDestroy()
+        {
+            RestorePlatformCollision();
+            _fallingThrough = false;
+        }
     }
 }
