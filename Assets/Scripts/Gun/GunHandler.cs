@@ -45,11 +45,15 @@ namespace RedesGame.Guns
             return gun;
         }
 
-        public void ChangeGun(PlayerModel target, int oldGunIndex,int newGunIndex)
+        public int ChangeGun(PlayerModel target, int oldGunIndex, int newGunIndex)
         {
-            _allGuns[newGunIndex].SetTarget(target);
+            var newGun = _allGuns[newGunIndex];
+            newGun.SetTarget(target);
+
             Destroy(_allGuns[oldGunIndex].gameObject);
             _allGuns.RemoveAt(oldGunIndex);
+
+            return _allGuns.IndexOf(newGun);
         }
         
         public int GetIndexForGun(Gun gunToCheck)

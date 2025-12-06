@@ -44,6 +44,7 @@ namespace RedesGame.Managers
             EventManager.StartListening("GoToMainMenu", DespawnPlayers);
             EventManager.StartListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StartListening("PlayerEliminated", OnPlayerEliminated);
+            EventManager.StartListening("PlayerLeft", OnPlayerLeft);
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
@@ -52,6 +53,7 @@ namespace RedesGame.Managers
             EventManager.StopListening("GoToMainMenu", DespawnPlayers);
             EventManager.StopListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StopListening("PlayerEliminated", OnPlayerEliminated);
+            EventManager.StopListening("PlayerLeft", OnPlayerLeft);
         }
 
 
@@ -193,7 +195,7 @@ namespace RedesGame.Managers
 
             if (MatchStarted && !MatchEnded)
             {
-                // Si se va alguien en medio de la partida, lo tratás como eliminado
+                // Si se va alguien en medio de la partida, lo tratÃ¡s como eliminado
                 if (AlivePlayers > 0 && _alivePlayers.Count == 1)
                 {
                     Winner = _alivePlayers.First();
