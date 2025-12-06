@@ -1893,7 +1893,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b1bf5542cd71fa4e98e36aa003b0e05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _runner: {fileID: 577266739}
+  _runnerPrefab: {fileID: 577266739}
+  _spawnNetworkPlayer: {fileID: 577266741}
 --- !u!114 &577266738
 MonoBehaviour:
   m_ObjectHideFlags: 0

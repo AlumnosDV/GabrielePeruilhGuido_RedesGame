@@ -104,7 +104,7 @@ namespace RedesGame.Player
         {
             Vector2 origin = _collider.bounds.center;
             float rayDistance = _collider.bounds.extents.y + 0.1f;
-            int platformLayerMask = LayerMask.GetMask("Platform");
+            int platformLayerMask = LayerMask.GetMask("Floor");
 
             RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, rayDistance, platformLayerMask);
             if (hit.collider != null)
