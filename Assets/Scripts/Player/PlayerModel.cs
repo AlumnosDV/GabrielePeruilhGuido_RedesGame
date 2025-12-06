@@ -145,7 +145,7 @@ namespace RedesGame.Player
         }
         #endregion
 
-        // ----------------- DAÑO / VIDA -----------------
+        // ----------------- DAÃ‘O / VIDA -----------------
 
         public void TakeForceDamage(float dmg, Vector2 direction)
         {
@@ -164,13 +164,53 @@ namespace RedesGame.Player
         private void RPC_TakeLifeDamage(int lostLife)
         {
             _currentLife -= lostLife;
-            transform.position = Extensions.GetRandomSpawnPoint();
 
-            if (_currentLife <= 0 && !PlayerDead)
+            if (_currentLife > 0)
             {
-                PlayerDead = true;
-                _playerDead = true;
-                EventManager.TriggerEvent("PlayerEliminated", Object.InputAuthority);
+                transform.position = Extensions.GetRandomSpawnPoint();
+                return;
+            }
+
+            HandleElimination();
+        }
+
+        private void HandleElimination()
+        {
+            if (PlayerDead)
+                return;
+
+            PlayerDead = true;
+            _playerDead = true;
+
+            DisableRenderersAndColliders();
+
+            EventManager.TriggerEvent("PlayerEliminated", Object.InputAuthority);
+        }
+
+        private void DisableRenderersAndColliders()
+        {
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+            {
+                renderer.enabled = false;
+            }
+
+            var colliders2D = GetComponentsInChildren<Collider2D>(true);
+            foreach (var collider2D in colliders2D)
+            {
+                collider2D.enabled = false;
+            }
+
+            var colliders = GetComponentsInChildren<Collider>(true);
+            foreach (var collider in colliders)
+            {
+                collider.enabled = false;
+            }
+
+            if (_networkRigidbody2D != null)
+            {
+                _networkRigidbody2D.Rigidbody.velocity = Vector2.zero;
+                _networkRigidbody2D.Rigidbody.simulated = false;
             }
         }
 
