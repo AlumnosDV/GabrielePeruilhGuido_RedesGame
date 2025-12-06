@@ -23,6 +23,19 @@ namespace RedesGame.Player
             if (IsLocal)
             {
                 Local = this;
+
+                var nick = PlayerPrefs.GetString(
+                    "PlayerNickName",
+                    $"Player_{UnityEngine.Random.Range(100000000, 999999999)}"
+                );
+
+                if (string.IsNullOrWhiteSpace(nick))
+                    nick = $"Player_{UnityEngine.Random.Range(100000000, 999999999)}";
+
+                if (nick.Length > 16)
+                    nick = nick.Substring(0, 16);
+
+                RPC_SetNickName(nick);
             }
 
             // El nombre del GameObject es solo una ayuda de debug

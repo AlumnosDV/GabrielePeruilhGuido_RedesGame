@@ -63,7 +63,7 @@ namespace RedesGame.Player
                 );
 
                 // El PlayerController vive dentro del prefab, se va a encargar del movimiento.
-                // Ac· solo nos interesa el input handler, que ya buscamos vÌa NetworkPlayer.Local.
+                // Ac√° solo nos interesa el input handler, que ya buscamos v√≠a NetworkPlayer.Local.
                 Debug.Log("[SpawnNetworkPlayer] Local player spawned");
             }
         }
@@ -92,7 +92,7 @@ namespace RedesGame.Player
             _sessionListUIHandler.ActiveCreateGameOption();
         }
 
-        // ---------- El resto de callbacks (vacÌos por ahora) ----------
+        // ---------- El resto de callbacks (vac√≠os por ahora) ----------
 
         public void OnConnectedToServer(NetworkRunner runner) { }
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
@@ -105,7 +105,6 @@ namespace RedesGame.Player
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("[SpawnNetworkPlayer] OnPlayerLeft " + player);
-            EventManager.TriggerEvent("PlayerLeft", player);
         }
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
         public void OnSceneLoadStart(NetworkRunner runner) { }
@@ -116,6 +115,6 @@ namespace RedesGame.Player
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
-        public void OnSceneLoadDone(NetworkRunner runner, SceneRef scene, SceneRef? prevScene) { } // si us·s overloads nuevos, ajustamos
+        public void OnSceneLoadDone(NetworkRunner runner, SceneRef scene, SceneRef? prevScene) { } // si us√°s overloads nuevos, ajustamos
     }
 }
