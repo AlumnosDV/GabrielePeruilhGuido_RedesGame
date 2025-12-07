@@ -294,11 +294,17 @@ namespace RedesGame.Player
             var behaviour = changed.Behaviour;
             if (behaviour.IndexOfNewWeapon >= 0)
             {
-                behaviour._currentWeaponIndex = GunHandler.Instance.ChangeGun(
+                var newWeaponIndex = GunHandler.Instance.ChangeGun(
                     behaviour,
                     behaviour._currentWeaponIndex,
                     behaviour.IndexOfNewWeapon
                 );
+
+                if (newWeaponIndex >= 0)
+                {
+                    behaviour._currentWeaponIndex = newWeaponIndex;
+                    behaviour._currentGun = GunHandler.Instance.GetGunByIndex(newWeaponIndex);
+                }
             }
         }
 

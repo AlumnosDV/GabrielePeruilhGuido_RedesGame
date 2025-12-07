@@ -47,15 +47,28 @@ namespace RedesGame.Guns
 
         public int ChangeGun(PlayerModel target, int oldGunIndex, int newGunIndex)
         {
+            if (_allGuns == null || newGunIndex < 0 || newGunIndex >= _allGuns.Count)
+                return -1;
             var newGun = _allGuns[newGunIndex];
             newGun.SetTarget(target);
 
-            Destroy(_allGuns[oldGunIndex].gameObject);
-            _allGuns.RemoveAt(oldGunIndex);
+            if (oldGunIndex >= 0 && oldGunIndex < _allGuns.Count)
+            {
+                Destroy(_allGuns[oldGunIndex].gameObject);
+                _allGuns.RemoveAt(oldGunIndex);
+            }
 
             return _allGuns.IndexOf(newGun);
         }
-        
+
+        public Gun GetGunByIndex(int index)
+        {
+            if (_allGuns == null || index < 0 || index >= _allGuns.Count)
+                return null;
+
+            return _allGuns[index];
+        }
+
         public int GetIndexForGun(Gun gunToCheck)
         {
             return _allGuns.IndexOf(gunToCheck);
