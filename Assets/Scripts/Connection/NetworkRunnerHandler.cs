@@ -143,9 +143,5 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) {}
-
-    public void OnDisconnectedFromServer(NetworkRunner runner)
-    {
-        throw new NotImplementedException();
-    }
+    public void OnDisconnectedFromServer(NetworkRunner runner) { }
 }

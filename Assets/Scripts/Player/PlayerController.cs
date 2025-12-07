@@ -14,6 +14,7 @@ namespace RedesGame.Player
         private NetworkRigidbody2D _rb;
         private Collider2D _collider;
         private PlayerModel _playerModel;
+        private Transform _playerBody;
         private Collider2D _currentPlatformCollider;
 
         private bool _fallingThrough;
@@ -25,6 +26,7 @@ namespace RedesGame.Player
             _rb = GetComponent<NetworkRigidbody2D>();
             _collider = GetComponent<Collider2D>();
             _playerModel = GetComponent<PlayerModel>();
+            _playerBody = _playerModel != null ? _playerModel.PlayerBody.transform : null;
         }
 
         public override void FixedUpdateNetwork()
@@ -43,6 +45,7 @@ namespace RedesGame.Player
 
             // --- MOVIMIENTO HORIZONTAL ---
             vel.x = input.Horizontal * moveSpeed;
+            UpdateFacingDirection(input.Horizontal);
 
             // --- SALTO ---
             if (input.Buttons.IsSet(MyButtons.Jump) && IsGrounded())
@@ -150,6 +153,17 @@ namespace RedesGame.Player
         {
             RestorePlatformCollision();
             _fallingThrough = false;
+        }
+
+        private void UpdateFacingDirection(float horizontalInput)
+        {
+            if (_playerBody == null)
+                return;
+
+            if (Mathf.Approximately(horizontalInput, 0f))
+                return;
+
+            _playerBody.right = horizontalInput > 0 ? Vector2.right : Vector2.left;
         }
     }
 }
