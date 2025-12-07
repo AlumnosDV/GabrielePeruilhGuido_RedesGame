@@ -112,6 +112,16 @@ namespace RedesGame.Player
             CheckNearbyGuns();
         }
 
+        public override void Render()
+        {
+            base.Render();
+
+            if (!_isActive || PlayerDead)
+                return;
+
+            _currentGun?.UpdatePosition();
+        }
+
         #region DISPARO 
 
         private void TryFire()
@@ -139,12 +149,14 @@ namespace RedesGame.Player
         private void FireBullet()
         {
             _lastFiringTime = Runner.SimulationTime;
+            Vector2 direction = _currentGun != null ? _currentGun.GetDirection() : Vector2.right;
+            Quaternion rotation = Quaternion.LookRotation(Vector3.forward, direction);
 
             // Spawn network de la bala
             var bullet = Runner.Spawn(
                 _currentGun.BulletPrefab,
                 _currentGun.FirePoint.transform.position,
-                Quaternion.identity
+                rotation
             );
 
             if (bullet == null)

@@ -10,17 +10,27 @@ namespace RedesGame.Bullets
     public class Bullet : NetworkBehaviour
     {
         [SerializeField] private BulletDataSO _bulletData;
+        [Networked] private Vector2 LaunchDirection { get; set; }
+        [Networked] private PlayerRef ShooterRef { get; set; }
 
         private NetworkRigidbody2D _myRigidBody;
         private TrailRenderer _trailRenderer;
         private PlayerModel _shooter;
+        private Transform _shooterRoot;
         private bool _canHandleCollisions;
+        private bool _hasAppliedLaunch;
 
         public override void Spawned()
         {
             _myRigidBody = GetComponent<NetworkRigidbody2D>();
             _trailRenderer = GetComponent<TrailRenderer>();
             _canHandleCollisions = false;
+            _hasAppliedLaunch = false;
+
+            if (ShooterRef.IsValid && Runner.TryGetPlayerObject(ShooterRef, out var shooterObj))
+            {
+                _shooterRoot = shooterObj.transform;
+            }
 
             if (_trailRenderer != null)
                 _trailRenderer.enabled = false;
@@ -35,6 +45,11 @@ namespace RedesGame.Bullets
                 if (_trailRenderer != null)
                     _trailRenderer.enabled = true;
             }
+
+            if (!_hasAppliedLaunch && LaunchDirection != Vector2.zero)
+            {
+                ApplyLaunch(LaunchDirection);
+            }
         }
 
         private void DestroyBullet()
@@ -43,16 +58,28 @@ namespace RedesGame.Bullets
                 Runner.Despawn(Object);
         }
 
-        /// <summary>
-        /// Lanza la bala en una dirección con un dueño (player que la disparó).
-        /// </summary>
         public void Launch(Vector2 direction, PlayerModel shooter)
         {
-            _shooter = shooter;
+            _shooterRoot = shooter != null ? shooter.transform : null;
+
+            if (Object != null && Object.HasStateAuthority)
+            {
+                LaunchDirection = direction;
+                ShooterRef = shooter != null && shooter.Object != null ? shooter.Object.InputAuthority : PlayerRef.None;
+            }
 
             if (_myRigidBody == null)
                 _myRigidBody = GetComponent<NetworkRigidbody2D>();
 
+            ApplyLaunch(direction);
+        }
+
+        private void ApplyLaunch(Vector2 direction)
+        {
+            if (_myRigidBody == null)
+                _myRigidBody = GetComponent<NetworkRigidbody2D>();
+
+            _hasAppliedLaunch = true;
             _myRigidBody.Rigidbody.velocity = Vector2.zero;
             _myRigidBody.Rigidbody.AddForce(direction.normalized * _bulletData.Speed, ForceMode2D.Impulse);
         }
@@ -63,10 +90,9 @@ namespace RedesGame.Bullets
             if (!Object || !Object.HasStateAuthority) return;
 
             // Evitar golpear al dueño
-            if (_shooter != null)
+            if (_shooterRoot != null)
             {
-                var shooterRoot = _shooter.transform;
-                if (collision.transform.IsChildOf(shooterRoot))
+                if (collision.transform.IsChildOf(_shooterRoot))
                     return;
             }
 

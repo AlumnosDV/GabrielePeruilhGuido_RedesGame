@@ -13,13 +13,17 @@ namespace RedesGame.Guns
         private Transform _targetTransform;
         private PlayerModel _owner;
 
+        public Vector2 GetDirection()
+        {
+            bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
+            return facingRight ? Vector2.right : Vector2.left;
+        }
         public void Shoot(Bullet bullet)
         {
             if (bullet == null || FirePoint == null)
                 return;
 
-            bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
-            Vector2 dir = facingRight ? Vector2.right : Vector2.left;
+            Vector2 dir = GetDirection();
             bullet.transform.position = FirePoint.transform.position;
             bullet.transform.up = dir;
             bullet.Launch(dir, _owner);
