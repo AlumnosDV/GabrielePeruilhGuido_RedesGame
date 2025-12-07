@@ -21,12 +21,22 @@ namespace RedesGame.Player
         private float _fallThroughTimer;
         private bool _isGrounded = true;
 
+        [Networked(OnChanged = nameof(OnFacingChanged))]
+        private NetworkBool FacingRight { get; set; }
+
         public override void Spawned()
         {
             _rb = GetComponent<NetworkRigidbody2D>();
             _collider = GetComponent<Collider2D>();
             _playerModel = GetComponent<PlayerModel>();
             _playerBody = _playerModel != null ? _playerModel.PlayerBody.transform : null;
+
+            if (Object.HasStateAuthority && !FacingRight)
+            {
+                FacingRight = true;
+            }
+
+            ApplyFacing(FacingRight);
         }
 
         public override void FixedUpdateNetwork()
@@ -157,13 +167,32 @@ namespace RedesGame.Player
 
         private void UpdateFacingDirection(float horizontalInput)
         {
-            if (_playerBody == null)
-                return;
-
             if (Mathf.Approximately(horizontalInput, 0f))
                 return;
 
-            _playerBody.right = horizontalInput > 0 ? Vector2.right : Vector2.left;
+            bool newFacingRight = horizontalInput > 0f;
+
+            if (FacingRight != newFacingRight)
+            {
+                FacingRight = newFacingRight;
+            }
+
+            ApplyFacing(newFacingRight);
+        }
+
+        private void ApplyFacing(bool facingRight)
+        {
+            if (_playerBody == null)
+                return;
+
+            var scale = _playerBody.localScale;
+            scale.x = Mathf.Abs(scale.x) * (facingRight ? 1f : -1f);
+            _playerBody.localScale = scale;
+        }
+
+        static void OnFacingChanged(Changed<PlayerController> changed)
+        {
+            changed.Behaviour.ApplyFacing(changed.Behaviour.FacingRight);
         }
     }
 }
