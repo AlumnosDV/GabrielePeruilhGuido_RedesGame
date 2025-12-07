@@ -46,6 +46,7 @@ namespace RedesGame.Player
         // Expuestos para que otros componentes consulten
         public bool IsActive => _isActive;
         public bool IsDead => PlayerDead;
+        public bool IsFacingRight => PlayerBody != null ? PlayerBody.transform.lossyScale.x >= 0f : transform.lossyScale.x >= 0f;
 
         // ----------------- LIFECYCLE -----------------
 

@@ -15,8 +15,8 @@ namespace RedesGame.Guns
 
         public void Shoot(Bullet bullet)
         {
-            // Dirección hacia donde mira el arma
-            Vector2 dir = transform.right;
+            bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
+            Vector2 dir = facingRight ? Vector2.right : Vector2.left;
             bullet.transform.position = FirePoint.transform.position;
             bullet.transform.up = dir;
             bullet.Launch(dir, _owner);
@@ -38,7 +38,8 @@ namespace RedesGame.Guns
                 return;
 
             transform.position = _targetTransform.position;
-            transform.right = _targetTransform.right;
+            bool facingRight = _owner != null ? _owner.IsFacingRight : _targetTransform.lossyScale.x >= 0f;
+            transform.right = facingRight ? Vector2.right : Vector2.left;
         }
 
         public void SetLayer(string layerName)
