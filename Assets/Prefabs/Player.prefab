@@ -902,7 +902,7 @@ MonoBehaviour:
   _gunsLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  _fireCooldown: 0.15
+  _fireCooldown: 0.1
   _checkGunsRadius: 3
   _maxLife: 3
 --- !u!114 &3468848899160017911
@@ -936,7 +936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   moveSpeed: 8
-  jumpForce: 12
+  jumpForce: 30
   fallThroughDuration: 0.3
 --- !u!114 &7460232119018586000
 MonoBehaviour:

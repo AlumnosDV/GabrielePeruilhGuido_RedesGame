@@ -123,7 +123,22 @@ namespace RedesGame.Player
             if (now - _lastFiringTime < _fireCooldown)
                 return;
 
-            _lastFiringTime = now;
+            if (Object.HasStateAuthority)
+            {
+                FireBullet();
+            }
+            else
+            {
+                RPC_RequestFire();
+            }
+
+            if (!_isFiring)
+                StartCoroutine(FiringCooldown());
+        }
+
+        private void FireBullet()
+        {
+            _lastFiringTime = Runner.SimulationTime;
 
             // Spawn network de la bala
             var bullet = Runner.Spawn(
@@ -132,10 +147,23 @@ namespace RedesGame.Player
                 Quaternion.identity
             );
 
-            _currentGun.Shoot(bullet);
+            if (bullet == null)
+                return;
 
-            if (!_isFiring)
-                StartCoroutine(FiringCooldown());
+            _currentGun.Shoot(bullet);
+        }
+
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_RequestFire()
+        {
+            if (_currentGun == null)
+                return;
+
+            double now = Runner.SimulationTime;
+            if (now - _lastFiringTime < _fireCooldown)
+                return;
+
+            FireBullet();
         }
 
         private IEnumerator FiringCooldown()

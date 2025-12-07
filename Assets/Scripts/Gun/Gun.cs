@@ -15,6 +15,9 @@ namespace RedesGame.Guns
 
         public void Shoot(Bullet bullet)
         {
+            if (bullet == null || FirePoint == null)
+                return;
+
             bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
             Vector2 dir = facingRight ? Vector2.right : Vector2.left;
             bullet.transform.position = FirePoint.transform.position;
@@ -40,6 +43,10 @@ namespace RedesGame.Guns
             transform.position = _targetTransform.position;
             bool facingRight = _owner != null ? _owner.IsFacingRight : _targetTransform.lossyScale.x >= 0f;
             transform.right = facingRight ? Vector2.right : Vector2.left;
+            
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (facingRight ? 1f : -1f);
+            transform.localScale = scale;
         }
 
         public void SetLayer(string layerName)
