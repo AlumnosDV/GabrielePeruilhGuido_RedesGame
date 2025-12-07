@@ -61,27 +61,36 @@ namespace RedesGame.Player
             if (SceneManager.GetActiveScene().buildIndex == 0)
                 return;
 
-            if (runner.Topology != SimulationConfig.Topologies.Shared)
+            if (!runner.IsServer)
                 return;
 
-            if (runner.TryGetPlayerObject(runner.LocalPlayer, out _))
+            foreach (var player in runner.ActivePlayers)
             {
-                Debug.Log("[SpawnNetworkPlayer] Local player already spawned, skipping duplicate spawn");
+                TrySpawnPlayer(runner, player);
+            }
+
+        }
+
+        private void TrySpawnPlayer(NetworkRunner runner, PlayerRef player)
+        {
+            if (runner.TryGetPlayerObject(player, out _))
+            {
+                Debug.Log($"[SpawnNetworkPlayer] Player {player} already has an object, skipping spawn");
                 return;
             }
 
             var spawnPos = Extensions.GetRandomSpawnPoint();
 
-            runner.Spawn(
+            var spawnedPlayer = runner.Spawn(
                 _playerPrefab,
                 spawnPos,
                 Quaternion.identity,
-                runner.LocalPlayer
+                player
             );
 
-            // El PlayerController vive dentro del prefab, se va a encargar del movimiento.
-            // Acá solo nos interesa el input handler, que ya buscamos vía NetworkPlayer.Local.
-            Debug.Log("[SpawnNetworkPlayer] Local player spawned");
+            runner.SetPlayerObject(player, spawnedPlayer.Object);
+
+            Debug.Log($"[SpawnNetworkPlayer] Spawned player object for {player}");
         }
 
         // ---------- SESIONES / UI ----------
@@ -117,7 +126,19 @@ namespace RedesGame.Player
         public void OnDisconnectedFromServer(NetworkRunner runner) { }
         public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
+        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
+        {
+            if (!runner.IsServer)
+                return;
+
+            Debug.Log($"[SpawnNetworkPlayer] OnPlayerJoined {player}");
+
+            // Avoid spawning in MainMenu; HandleSceneLoaded will spawn after the game scene loads.
+            if (SceneManager.GetActiveScene().buildIndex == 0)
+                return;
+
+            TrySpawnPlayer(runner, player);
+        }
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("[SpawnNetworkPlayer] OnPlayerLeft " + player);

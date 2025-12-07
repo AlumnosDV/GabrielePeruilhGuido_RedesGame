@@ -286,14 +286,17 @@ namespace RedesGame.Player
             if (SceneManager.GetActiveScene().name == "MainMenu")
                 return;
 
-            RPC_SetReadyState(!_isReady);
+            var newReadyState = !_isReady;
+            _isReady = newReadyState;
+            
+            RPC_SetReadyState(newReadyState);
         }
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
-        private void RPC_SetReadyState(bool newReadyState, RpcInfo info = default)
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_SetReadyState(bool newReadyState)
         {
             _isReady = newReadyState;
-            EventManager.TriggerEvent("PlayerReadyChanged", info.Source, newReadyState);
+            EventManager.TriggerEvent("PlayerReadyChanged", Object.InputAuthority, newReadyState);
         }
     }
 }
