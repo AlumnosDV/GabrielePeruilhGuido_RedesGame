@@ -12,6 +12,7 @@ namespace RedesGame.Managers
 
         [Networked(OnChanged = nameof(OnPlayersInGameChanged))]
         private int PlayersInGame { get; set; }
+
         [Networked]
         private float Timer { get; set; }
 
@@ -36,11 +37,17 @@ namespace RedesGame.Managers
         private readonly Dictionary<PlayerRef, bool> _playerReadyState = new();
         private HashSet<PlayerRef> _alivePlayers = new();
 
-        public int CurrentPlayersInGame => PlayersInGame;
-        public int CurrentReadyPlayers => ReadyPlayers;
+        // === NUEVO FLAG ===
+        private bool _isSpawned;
+
+        // Getters “seguros”
+        public int CurrentPlayersInGame => _isSpawned ? PlayersInGame : 0;
+        public int CurrentReadyPlayers => _isSpawned ? ReadyPlayers : 0;
         public int MinPlayersPerGame => _minPlayersPerGame;
         public override void Spawned()
         {
+            _isSpawned = true; 
+
             ScreenManager.Instance.Deactivate();
             EventManager.StartListening("PlayerJoined", OnPlayerJoined);
             EventManager.StartListening("GoToMainMenu", DespawnPlayers);
@@ -51,14 +58,14 @@ namespace RedesGame.Managers
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            _isSpawned = false;
+
             EventManager.StopListening("PlayerJoined", OnPlayerJoined);
             EventManager.StopListening("GoToMainMenu", DespawnPlayers);
             EventManager.StopListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StopListening("PlayerEliminated", OnPlayerEliminated);
             EventManager.StopListening("PlayerLeft", OnPlayerLeft);
         }
-
-
 
         static void OnAllPlayersLeft(Changed<GameManager> changed)
         {

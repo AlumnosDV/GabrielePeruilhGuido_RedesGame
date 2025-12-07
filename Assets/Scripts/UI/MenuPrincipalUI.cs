@@ -16,7 +16,7 @@ namespace RedesGame.UI
         [Header("Player Settings")]
         [SerializeField] private TMP_InputField _nickNameInput;
 
-        [Header("Player Settings")]
+        [Header("Session Settings")]
         [SerializeField] private TMP_InputField _sessionName;
 
         [Header("Menus")]
@@ -30,6 +30,7 @@ namespace RedesGame.UI
         [SerializeField] private GameObject _onJoiningSessionScreen;
 
         private Stack<ICommand> commandStack = new Stack<ICommand>();
+
         [ContextMenu("Default Awake")]
         private void Awake()
         {
@@ -55,7 +56,17 @@ namespace RedesGame.UI
 
         public void Play(string sceneName)
         {
-            _networkHandler.CreateGame(_sessionName.text, sceneName);
+            if (_networkHandler == null)
+            {
+                Debug.LogError("[MenuPrincipalUI] No hay NetworkRunnerHandler para crear la partida.");
+                return;
+            }
+
+            var sessionName = string.IsNullOrWhiteSpace(_sessionName.text)
+                ? "Session_" + Random.Range(1000, 9999)
+                : _sessionName.text;
+
+            _networkHandler.CreateGame(sessionName, sceneName);
         }
 
         public void GoToControls()
@@ -80,8 +91,12 @@ namespace RedesGame.UI
         {
             ExecuteCommand(new ChangeMenuCommand(
                 new[] { _sessionsScreen, _backButton }, new[] { _mainMenuButtons }));
+
             _sessionListUIHandler.OnLookingForSessions();
-            _networkHandler.OnJoinLobby();
+
+            // Opcional pero razonable: pedimos join lobby explícito
+            if (_networkHandler != null)
+                _networkHandler.OnJoinLobby();
         }
 
         public void GoToCreateSession()
@@ -108,7 +123,6 @@ namespace RedesGame.UI
             ExecuteCommand(new ChangeMenuCommand(
                 new[] { _mainMenuButtons }, new[] { _nickNameScreen }));
         }
-
 
         public void Quit()
         {
