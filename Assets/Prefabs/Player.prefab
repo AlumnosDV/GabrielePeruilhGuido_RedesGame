@@ -726,7 +726,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  InterpolationSpace: 0
+  InterpolationSpace: 1
   InterpolationTarget: {fileID: 4467520952596758223}
   InterpolateErrorCorrection: 1
   InterpolatedErrorCorrectionSettings:
@@ -936,7 +936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   moveSpeed: 8
-  jumpForce: 30
+  jumpForce: 40
   fallThroughDuration: 0.3
 --- !u!114 &7460232119018586000
 MonoBehaviour:
