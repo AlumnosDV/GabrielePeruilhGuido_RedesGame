@@ -99,11 +99,10 @@ namespace RedesGame.UI
         {
             _sessionListUIHandler.OnLookingForSessions();
 
-            else
-                Debug.LogError("[MenuPrincipalUI] No hay NetworkRunnerHandler para buscar sesiones.");
-            // Opcional pero razonable: pedimos join lobby explícito
             if (_networkHandler != null)
                 _networkHandler.OnJoinLobby();
+            else
+                Debug.LogError("[MenuPrincipalUI] No hay NetworkRunnerHandler para buscar sesiones.");
         }
 
         public void GoToCreateSession()
