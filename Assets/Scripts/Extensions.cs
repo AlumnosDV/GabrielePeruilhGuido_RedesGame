@@ -8,7 +8,7 @@ namespace RedesGame.ExtensionsClass
     {
         public static Vector2 GetRandomSpawnPoint()
         {
-            return new Vector3(Random.Range(-5f, 5f), 10f, 0);
+            return new Vector3(Random.Range(-5f, 5f), 5f, 0);
         }
 
     }
