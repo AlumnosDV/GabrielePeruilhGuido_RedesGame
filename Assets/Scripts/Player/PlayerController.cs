@@ -10,6 +10,7 @@ namespace RedesGame.Player
         [SerializeField] private float moveSpeed = 8f;
         [SerializeField] private float jumpForce = 12f;
         [SerializeField] private float fallThroughDuration = 0.3f;
+        [SerializeField] private float upwardPassCheckDistance = 0.15f;
         [SerializeField] private LayerMask groundLayerMask;
         [SerializeField] private float groundedCheckDistance = 0.1f;
         [SerializeField, Range(0f, 1f)] private float groundedNormalThreshold = 0.2f;
@@ -77,6 +78,8 @@ namespace RedesGame.Player
                 TryFallThrough();
             }
 
+            TryPassThroughFromBelow(vel.y);
+
             UpdateFallThrough();
 
             rb.velocity = vel;
@@ -102,6 +105,33 @@ namespace RedesGame.Player
             _fallThroughTimer = fallThroughDuration;
 
             _currentPlatformCollider = platformCollider;
+            Physics2D.IgnoreCollision(_collider, _currentPlatformCollider, true);
+        }
+
+        private void TryPassThroughFromBelow(float verticalVelocity)
+        {
+            if (_fallingThrough || verticalVelocity <= 0f)
+                return;
+
+            if (_collider == null)
+                return;
+
+            var bounds = _collider.bounds;
+            Vector2 origin = bounds.center;
+            Vector2 size = new Vector2(bounds.size.x * 0.95f, bounds.size.y);
+
+            RaycastHit2D hit = Physics2D.BoxCast(origin, size, 0f, Vector2.up, upwardPassCheckDistance, groundLayerMask);
+
+            if (hit.collider == null)
+                return;
+
+            if (hit.normal.y >= -groundedNormalThreshold)
+                return;
+
+            _fallingThrough = true;
+            _fallThroughTimer = fallThroughDuration;
+
+            _currentPlatformCollider = hit.collider;
             Physics2D.IgnoreCollision(_collider, _currentPlatformCollider, true);
         }
 
