@@ -92,9 +92,16 @@ namespace RedesGame.UI
             ExecuteCommand(new ChangeMenuCommand(
                 new[] { _sessionsScreen, _backButton }, new[] { _mainMenuButtons }));
 
+            RefreshSessionsList();
+        }
+
+        public void RefreshSessionsList()
+        {
             _sessionListUIHandler.OnLookingForSessions();
 
-            // Opcional pero razonable: pedimos join lobby explícito
+            else
+                Debug.LogError("[MenuPrincipalUI] No hay NetworkRunnerHandler para buscar sesiones.");
+            // Opcional pero razonable: pedimos join lobby explÃ­cito
             if (_networkHandler != null)
                 _networkHandler.OnJoinLobby();
         }
