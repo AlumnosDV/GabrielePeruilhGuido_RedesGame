@@ -19,7 +19,6 @@ namespace RedesGame.Player
         private PlayerModel _playerModel;
         private Transform _playerBody;
         private Collider2D _currentPlatformCollider;
-        private readonly Collider2D[] _overlapResults = new Collider2D[4];
 
         private bool _fallingThrough;
         private float _fallThroughTimer;
@@ -160,22 +159,11 @@ namespace RedesGame.Player
             if (_collider == null || _currentPlatformCollider == null)
                 return false;
 
-            int count = Physics2D.OverlapBoxNonAlloc(
-                _collider.bounds.center,
-                _collider.bounds.size,
-                0f,
-                _overlapResults,
-                LayerMask.GetMask("Floor"));
-
-            for (int i = 0; i < count; i++)
-            {
-                if (_overlapResults[i] == _currentPlatformCollider)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            // Using ColliderDistance2D avoids treating distant tiles in a composite tilemap
+            // as overlaps. We only extend the fall-through window while still penetrating
+            // the same collider we chose to ignore.
+            var distance = Physics2D.Distance(_collider, _currentPlatformCollider);
+            return distance.isOverlapped;
         }
         #endregion
 
