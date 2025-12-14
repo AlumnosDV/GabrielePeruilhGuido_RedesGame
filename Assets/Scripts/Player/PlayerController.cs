@@ -19,6 +19,7 @@ namespace RedesGame.Player
         private PlayerModel _playerModel;
         private Transform _playerBody;
         private Collider2D _currentPlatformCollider;
+        private readonly Collider2D[] _overlapResults = new Collider2D[4];
 
         private bool _fallingThrough;
         private float _fallThroughTimer;
@@ -114,6 +115,13 @@ namespace RedesGame.Player
 
             if (_fallThroughTimer <= 0)
             {
+                if (IsOverlappingCurrentPlatform())
+                {
+                    // Extend the ignore-collision window while still intersecting the platform
+                    _fallThroughTimer = Runner.DeltaTime;
+                    return;
+                }
+
                 _fallingThrough = false;
 
                 RestorePlatformCollision();
@@ -145,6 +153,29 @@ namespace RedesGame.Player
             }
 
             _currentPlatformCollider = null;
+        }
+
+        private bool IsOverlappingCurrentPlatform()
+        {
+            if (_collider == null || _currentPlatformCollider == null)
+                return false;
+
+            int count = Physics2D.OverlapBoxNonAlloc(
+                _collider.bounds.center,
+                _collider.bounds.size,
+                0f,
+                _overlapResults,
+                LayerMask.GetMask("Floor"));
+
+            for (int i = 0; i < count; i++)
+            {
+                if (_overlapResults[i] == _currentPlatformCollider)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         #endregion
 
