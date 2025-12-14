@@ -10,6 +10,9 @@ namespace RedesGame.Player
         [SerializeField] private float moveSpeed = 8f;
         [SerializeField] private float jumpForce = 12f;
         [SerializeField] private float fallThroughDuration = 0.3f;
+        [SerializeField] private LayerMask groundLayerMask;
+        [SerializeField] private float groundedCheckDistance = 0.1f;
+        [SerializeField, Range(0f, 1f)] private float groundedNormalThreshold = 0.2f;
 
         private NetworkRigidbody2D _rb;
         private Collider2D _collider;
@@ -30,6 +33,8 @@ namespace RedesGame.Player
             _collider = GetComponent<Collider2D>();
             _playerModel = GetComponent<PlayerModel>();
             _playerBody = _playerModel != null ? _playerModel.PlayerBody.transform : null;
+
+            EnsureGroundLayerMask();
 
             if (Object.HasStateAuthority && !FacingRight)
             {
@@ -52,6 +57,8 @@ namespace RedesGame.Player
 
             var rb = _rb.Rigidbody;
             Vector2 vel = rb.velocity;
+
+            UpdateGroundedState();
 
             // --- MOVIMIENTO HORIZONTAL ---
             vel.x = input.Horizontal * moveSpeed;
@@ -150,6 +157,38 @@ namespace RedesGame.Player
         private bool IsGrounded()
         {
             return _isGrounded;
+        }
+
+        private void UpdateGroundedState()
+        {
+            if (_collider == null)
+                return;
+
+            var bounds = _collider.bounds;
+            Vector2 origin = bounds.center;
+            Vector2 size = new Vector2(bounds.size.x * 0.95f, bounds.size.y);
+
+            RaycastHit2D hit = Physics2D.BoxCast(origin, size, 0f, Vector2.down, groundedCheckDistance, groundLayerMask);
+
+            bool grounded = false;
+
+            if (hit.collider != null)
+            {
+                if (!_fallingThrough || hit.collider != _currentPlatformCollider)
+                {
+                    grounded = hit.normal.y >= groundedNormalThreshold;
+                }
+            }
+
+            SetGrounded(grounded);
+        }
+
+        private void EnsureGroundLayerMask()
+        {
+            if (groundLayerMask == default)
+            {
+                groundLayerMask = LayerMask.GetMask("Floor");
+            }
         }
         #endregion
 
