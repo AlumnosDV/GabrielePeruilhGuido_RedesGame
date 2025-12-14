@@ -7,8 +7,9 @@ namespace RedesGame.UI.Sessions
 {
     public class SessionListUIHandler : MonoBehaviour
     {
-        [SerializeField] private NetworkHandler _networkHandler;
+        [SerializeField] private NetworkRunnerHandler _networkHandler;
         [SerializeField] private MenuPrincipalUI _menuPrincipalUI;
+
         [Header("Canvas Items")]
         [SerializeField] private TextMeshProUGUI _statusText;
         [SerializeField] private GameObject _sessionItemListPrefab;
@@ -27,21 +28,30 @@ namespace RedesGame.UI.Sessions
             {
                 Destroy(child.gameObject);
             }
-            if (_statusText == null) return;
-                _statusText.gameObject.SetActive(false);
+
+            if (_statusText == null)
+                return;
+
+            _statusText.gameObject.SetActive(false);
         }
 
         public void AddToList(SessionInfo sessionInfo)
         {
-            SessionInfoListUIItem addedSessionInfoListUIItem = Instantiate(_sessionItemListPrefab, _verticalLayoutGroup.transform).GetComponent<SessionInfoListUIItem>();
+            var itemGO = Instantiate(_sessionItemListPrefab, _verticalLayoutGroup.transform);
+            var addedSessionInfoListUIItem = itemGO.GetComponent<SessionInfoListUIItem>();
 
             addedSessionInfoListUIItem.SetInfomartion(sessionInfo);
-
             addedSessionInfoListUIItem.OnJoinSession += AddedSessionInfoListUIItem_OnJoinSession;
         }
 
         private void AddedSessionInfoListUIItem_OnJoinSession(SessionInfo sessionInfo)
         {
+            if (_networkHandler == null)
+            {
+                Debug.LogError("[SessionListUIHandler] NetworkRunnerHandler no asignado.");
+                return;
+            }
+
             _networkHandler.JoinGame(sessionInfo);
             _menuPrincipalUI.GoToJoiningSessionScreen();
         }

@@ -11,15 +11,27 @@ namespace RedesGame.Guns
         public Sprite GunSprite;
 
         private Transform _targetTransform;
+        private PlayerModel _owner;
 
+        public Vector2 GetDirection()
+        {
+            bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
+            return facingRight ? Vector2.right : Vector2.left;
+        }
         public void Shoot(Bullet bullet)
         {
-            bullet.transform.up = transform.right;
-            bullet.Launch(transform.right, gameObject);
+            if (bullet == null || FirePoint == null)
+                return;
+
+            Vector2 dir = GetDirection();
+            bullet.transform.position = FirePoint.transform.position;
+            bullet.transform.up = dir;
+            bullet.Launch(dir, _owner);
         }
 
         public Gun SetTarget(PlayerModel player)
         {
+            _owner = player;
             _targetTransform = player.PlayerBody.transform;
             transform.SetParent(player.PlayerBody.transform);
             SetLayer("Gun");
@@ -29,14 +41,21 @@ namespace RedesGame.Guns
 
         public void UpdatePosition()
         {
+            if (_targetTransform == null)
+                return;
+
             transform.position = _targetTransform.position;
-            transform.right = _targetTransform.right;
+            bool facingRight = _owner != null ? _owner.IsFacingRight : _targetTransform.lossyScale.x >= 0f;
+            transform.right = facingRight ? Vector2.right : Vector2.left;
+            
+            var scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (facingRight ? 1f : -1f);
+            transform.localScale = scale;
         }
 
         public void SetLayer(string layerName)
         {
             gameObject.layer = LayerMask.NameToLayer(layerName);
         }
-
     }
 }

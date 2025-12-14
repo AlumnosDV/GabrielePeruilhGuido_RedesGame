@@ -21,14 +21,11 @@ namespace RedesGame.UI.Sessions
             this.sessionInfo = sessionInfo;
 
             _sessionNameText.text = sessionInfo.Name;
-            _playerCountText.text = $"{sessionInfo.PlayerCount.ToString()}/{sessionInfo.MaxPlayers.ToString()}";
+            _playerCountText.text = $"{sessionInfo.PlayerCount}/{sessionInfo.MaxPlayers}";
 
-            bool isJoinButtonActivated = true;
-
-            if (sessionInfo.PlayerCount >= sessionInfo.MaxPlayers)
-                isJoinButtonActivated = false;
-
-            _joinButton.gameObject.SetActive(isJoinButtonActivated);
+            bool hasRoomAvailable = sessionInfo.PlayerCount < sessionInfo.MaxPlayers;
+            _joinButton.gameObject.SetActive(true);
+            _joinButton.interactable = hasRoomAvailable;
         }
 
         public void OnClick()
