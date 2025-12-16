@@ -1,6 +1,7 @@
 using RedesGame.Bullets;
 using UnityEngine;
 using RedesGame.Player;
+using System;
 using System.Collections;
 
 namespace RedesGame.Guns
@@ -10,6 +11,7 @@ namespace RedesGame.Guns
         public Bullet BulletPrefab;
         public GameObject FirePoint;
         public Sprite GunSprite;
+        [SerializeField, Tooltip("Unique identifier so all clients agree on which gun is which")] private string _gunId = string.Empty;
 
         [Header("Ammo")]
         [SerializeField, Tooltip("-1 for infinite ammo")] private int _ammoCapacity = -1;
@@ -27,6 +29,7 @@ namespace RedesGame.Guns
         public bool HasLimitedAmmo => _ammoCapacity >= 0;
         public bool HasAmmo => !HasLimitedAmmo || _currentAmmo > 0;
         public bool IsOutOfAmmo => HasLimitedAmmo && _currentAmmo <= 0;
+        public string GunId => _gunId;
 
         private void Awake()
         {
@@ -35,6 +38,17 @@ namespace RedesGame.Guns
             _spawnScale = transform.localScale;
 
             IsPickupGun = gameObject.layer == LayerMask.NameToLayer("InGameGun");
+
+            if (IsPickupGun && string.IsNullOrWhiteSpace(_gunId))
+            {
+                _gunId = $"pickup-{name}-{transform.position}";
+            }
+
+            if (IsPickupGun && _ammoCapacity < 0)
+            {
+                _ammoCapacity = 6;
+            }
+
             ResetAmmo();
         }
 
@@ -60,6 +74,11 @@ namespace RedesGame.Guns
             _targetTransform = player.PlayerBody.transform;
             transform.SetParent(player.PlayerBody.transform);
             SetLayer("Gun");
+
+            if (string.IsNullOrWhiteSpace(_gunId) && player != null)
+            {
+                _gunId = $"player-{player.Object.InputAuthority.Raw}-default";
+            }
 
             if (IsPickupGun)
             {

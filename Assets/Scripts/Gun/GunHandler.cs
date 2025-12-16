@@ -1,5 +1,6 @@
 using RedesGame.Managers;
 using RedesGame.Player;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,13 +11,13 @@ namespace RedesGame.Guns
     {
         [SerializeField] private Gun _initialGunPrefab;
         private bool _isActive = false;
-        private List<Gun> _allGuns;
+        private readonly Dictionary<string, Gun> _gunsById = new();
+        private readonly List<string> _orderedGunIds = new();
         protected override void Awake()
         {
             itDestroyOnLoad = true;
             base.Awake();
             Debug.Log("Gun Handler Awake");
-            _allGuns = new List<Gun>();
         }
 
         private void Start()
@@ -50,16 +51,15 @@ namespace RedesGame.Guns
 
         public int ChangeGun(PlayerModel target, int oldGunIndex, int newGunIndex)
         {
-            if (_allGuns == null || newGunIndex < 0 || newGunIndex >= _allGuns.Count)
+            if (newGunIndex < 0 || newGunIndex >= _orderedGunIds.Count)
                 return -1;
-            var newGun = _allGuns[newGunIndex];
+            var newGun = GetGunByIndex(newGunIndex);
             newGun.SetTarget(target);
 
             Gun oldGun = null;
-            if (oldGunIndex >= 0 && oldGunIndex < _allGuns.Count)
+            if (oldGunIndex >= 0 && oldGunIndex < _orderedGunIds.Count)
             {
-                oldGun = _allGuns[oldGunIndex];
-                _allGuns.Remove(oldGun);
+                oldGun = GetGunByIndex(oldGunIndex);
             }
 
             if (oldGun != null)
@@ -70,20 +70,24 @@ namespace RedesGame.Guns
                     Destroy(oldGun.gameObject);
             }
 
-            return _allGuns.IndexOf(newGun);
+            return GetIndexForGun(newGun);
         }
 
         public Gun GetGunByIndex(int index)
         {
-            if (_allGuns == null || index < 0 || index >= _allGuns.Count)
+            if (index < 0 || index >= _orderedGunIds.Count)
                 return null;
 
-            return _allGuns[index];
+            var id = _orderedGunIds[index];
+            return _gunsById.ContainsKey(id) ? _gunsById[id] : null;
         }
 
         public int GetIndexForGun(Gun gunToCheck)
         {
-            return _allGuns.IndexOf(gunToCheck);
+            if (gunToCheck == null || string.IsNullOrWhiteSpace(gunToCheck.GunId))
+                return -1;
+
+            return _orderedGunIds.IndexOf(gunToCheck.GunId);
         }
 
         public int SpawnDefaultGun(PlayerModel target)
@@ -94,18 +98,29 @@ namespace RedesGame.Guns
 
         public void RegisterGun(Gun gun)
         {
-            if (gun == null || _allGuns == null)
+            if (gun == null)
                 return;
 
-            if (!_allGuns.Contains(gun))
-                _allGuns.Add(gun);
+            if (string.IsNullOrWhiteSpace(gun.GunId))
+                return;
+
+            if (!_gunsById.ContainsKey(gun.GunId))
+            {
+                _gunsById.Add(gun.GunId, gun);
+                _orderedGunIds.Add(gun.GunId);
+                _orderedGunIds.Sort();
+            }
+            else
+            {
+                _gunsById[gun.GunId] = gun;
+            }
         }
 
         private void LateUpdate()
         {
             if (!_isActive) return;
 
-            var filteredGuns = _allGuns.Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("Gun")).ToList();
+            var filteredGuns = _gunsById.Values.Where(gun => gun != null && gun.gameObject.layer == LayerMask.NameToLayer("Gun")).ToList();
             foreach (var gun in filteredGuns)
             {
                 gun.UpdatePosition();
@@ -120,6 +135,12 @@ namespace RedesGame.Guns
         public void Deactivate()
         {
             _isActive = false;
+        }
+
+        private void OnDestroy()
+        {
+            _orderedGunIds.Clear();
+            _gunsById.Clear();
         }
     }
 }
