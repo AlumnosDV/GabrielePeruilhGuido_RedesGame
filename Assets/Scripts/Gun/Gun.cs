@@ -56,6 +56,10 @@ namespace RedesGame.Guns
         {
             IsPickupGun = false;
             _isRespawning = false;
+
+            // Las armas iniciales (pistolas) no deben tener límite de balas.
+            _ammoCapacity = -1;
+            ResetAmmo();
         }
 
         public Vector2 GetDirection()
