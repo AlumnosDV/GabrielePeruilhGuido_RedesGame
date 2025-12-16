@@ -52,6 +52,12 @@ namespace RedesGame.Guns
             ResetAmmo();
         }
 
+        public void MarkAsPlayerWeapon()
+        {
+            IsPickupGun = false;
+            _isRespawning = false;
+        }
+
         public Vector2 GetDirection()
         {
             bool facingRight = _owner != null ? _owner.IsFacingRight : transform.lossyScale.x >= 0f;
