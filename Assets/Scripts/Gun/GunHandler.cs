@@ -22,7 +22,10 @@ namespace RedesGame.Guns
 
         private void Start()
         {
-            var gunsInGame = FindObjectsOfType<Gun>().Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun"));
+            var gunsInGame = FindObjectsOfType<Gun>()
+                .Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun"))
+                .OrderBy(gun => gun.GunId);
+
             foreach (var gun in gunsInGame)
             {
                 RegisterGun(gun);
@@ -108,7 +111,6 @@ namespace RedesGame.Guns
             {
                 _gunsById.Add(gun.GunId, gun);
                 _orderedGunIds.Add(gun.GunId);
-                _orderedGunIds.Sort();
             }
             else
             {
