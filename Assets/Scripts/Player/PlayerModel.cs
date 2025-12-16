@@ -148,6 +148,15 @@ namespace RedesGame.Player
 
         private void FireBullet()
         {
+            if (_currentGun == null)
+                return;
+
+            if (!_currentGun.HasAmmo)
+            {
+                HandleGunDepleted();
+                return;
+            }
+
             _lastFiringTime = Runner.SimulationTime;
             Vector2 direction = _currentGun != null ? _currentGun.GetDirection() : Vector2.right;
             Quaternion rotation = Quaternion.LookRotation(Vector3.forward, direction);
@@ -163,6 +172,12 @@ namespace RedesGame.Player
                 return;
 
             _currentGun.Shoot(bullet);
+            _currentGun.ConsumeAmmo();
+
+            if (_currentGun.IsOutOfAmmo)
+            {
+                HandleGunDepleted();
+            }
         }
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -287,6 +302,36 @@ namespace RedesGame.Player
         private void RPC_ChangeGun(int newGunIndex)
         {
             IndexOfNewWeapon = newGunIndex;
+        }
+
+        private void HandleGunDepleted()
+        {
+            if (_currentGun == null)
+                return;
+
+            if (Object.HasStateAuthority)
+            {
+                SwitchToDefaultGun();
+            }
+            else
+            {
+                RPC_RequestDefaultGun();
+            }
+        }
+
+        private void SwitchToDefaultGun()
+        {
+            var defaultGunIndex = GunHandler.Instance.SpawnDefaultGun(this);
+            if (defaultGunIndex >= 0)
+            {
+                RPC_ChangeGun(defaultGunIndex);
+            }
+        }
+
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_RequestDefaultGun()
+        {
+            SwitchToDefaultGun();
         }
 
         static void OnChangeGun(Changed<PlayerModel> changed)

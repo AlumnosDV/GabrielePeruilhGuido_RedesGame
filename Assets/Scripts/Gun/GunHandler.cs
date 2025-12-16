@@ -16,13 +16,16 @@ namespace RedesGame.Guns
             itDestroyOnLoad = true;
             base.Awake();
             Debug.Log("Gun Handler Awake");
+            _allGuns = new List<Gun>();
         }
 
         private void Start()
         {
-            _allGuns = new List<Gun>();
             var gunsInGame = FindObjectsOfType<Gun>().Where(gun => gun.gameObject.layer == LayerMask.NameToLayer("InGameGun"));
-            _allGuns = _allGuns.Concat(gunsInGame).ToList();
+            foreach (var gun in gunsInGame)
+            {
+                RegisterGun(gun);
+            }
         }
 
         private void OnEnable()
@@ -41,7 +44,7 @@ namespace RedesGame.Guns
 
             var gun = Instantiate(_initialGunPrefab, target.PlayerBody.transform);
             gun.SetTarget(target);
-            _allGuns.Add(gun);
+            RegisterGun(gun);
             return gun;
         }
 
@@ -52,10 +55,19 @@ namespace RedesGame.Guns
             var newGun = _allGuns[newGunIndex];
             newGun.SetTarget(target);
 
+            Gun oldGun = null;
             if (oldGunIndex >= 0 && oldGunIndex < _allGuns.Count)
             {
-                Destroy(_allGuns[oldGunIndex].gameObject);
-                _allGuns.RemoveAt(oldGunIndex);
+                oldGun = _allGuns[oldGunIndex];
+                _allGuns.Remove(oldGun);
+            }
+
+            if (oldGun != null)
+            {
+                if (oldGun.IsPickupGun)
+                    oldGun.BeginRespawnCycle();
+                else
+                    Destroy(oldGun.gameObject);
             }
 
             return _allGuns.IndexOf(newGun);
@@ -72,6 +84,21 @@ namespace RedesGame.Guns
         public int GetIndexForGun(Gun gunToCheck)
         {
             return _allGuns.IndexOf(gunToCheck);
+        }
+
+        public int SpawnDefaultGun(PlayerModel target)
+        {
+            var gun = CreateGun(target);
+            return GetIndexForGun(gun);
+        }
+
+        public void RegisterGun(Gun gun)
+        {
+            if (gun == null || _allGuns == null)
+                return;
+
+            if (!_allGuns.Contains(gun))
+                _allGuns.Add(gun);
         }
 
         private void LateUpdate()
