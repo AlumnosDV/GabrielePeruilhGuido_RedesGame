@@ -294,6 +294,14 @@ namespace RedesGame.Player
             if (newGun == _currentGun)
                 return;
 
+            // Attach visually for the input authority so the player instantly sees the pickup while
+            // the state authority processes the authoritative swap.
+            if (Object.HasInputAuthority)
+            {
+                newGun.SetTarget(this);
+                _currentGun = newGun;
+            }
+
             _currentGun = newGun;
             RPC_ChangeGun(GunHandler.Instance.GetIndexForGun(newGun));
         }
@@ -337,7 +345,10 @@ namespace RedesGame.Player
         static void OnChangeGun(Changed<PlayerModel> changed)
         {
             var behaviour = changed.Behaviour;
-            if (behaviour.IndexOfNewWeapon >= 0)
+            if (behaviour.IndexOfNewWeapon < 0)
+                return;
+
+            if (behaviour.Object.HasStateAuthority)
             {
                 var newWeaponIndex = GunHandler.Instance.ChangeGun(
                     behaviour,
@@ -350,6 +361,12 @@ namespace RedesGame.Player
                     behaviour._currentWeaponIndex = newWeaponIndex;
                     behaviour._currentGun = GunHandler.Instance.GetGunByIndex(newWeaponIndex);
                 }
+            }
+            else
+            {
+                behaviour._currentWeaponIndex = behaviour.IndexOfNewWeapon;
+                behaviour._currentGun = GunHandler.Instance.GetGunByIndex(behaviour.IndexOfNewWeapon);
+                behaviour._currentGun?.SetTarget(behaviour);
             }
         }
 
