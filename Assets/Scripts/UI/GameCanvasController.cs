@@ -45,6 +45,7 @@ namespace RedesGame.UI
             EventManager.StartListening("MatchStarted", OnMatchStarted);
             EventManager.StartListening("ReadyStatusChanged", OnReadyStatusChanged);
             EventManager.StartListening("MatchEnded", OnMatchEnded);
+            EventManager.StartListening("MatchReset", OnMatchReset);
 
             // Refrescar estado inicial desde GameManager
             var gm = FindObjectOfType<RedesGame.Managers.GameManager>();
@@ -69,6 +70,7 @@ namespace RedesGame.UI
             EventManager.StopListening("MatchStarted", OnMatchStarted);
             EventManager.StopListening("ReadyStatusChanged", OnReadyStatusChanged);
             EventManager.StopListening("MatchEnded", OnMatchEnded);
+            EventManager.StopListening("MatchReset", OnMatchReset);
 
         }
 
@@ -162,6 +164,22 @@ namespace RedesGame.UI
                 _winConditionScreen.SetActive(true);
             else
                 _loseConditionScreen.SetActive(true);
+        }
+
+        private void OnMatchReset(object[] obj)
+        {
+            _waitingScreen.SetActive(true);
+
+            if (_winConditionScreen != null)
+                _winConditionScreen.SetActive(false);
+
+            if (_loseConditionScreen != null)
+                _loseConditionScreen.SetActive(false);
+
+            if (_matchResult != null)
+                _matchResult.gameObject.SetActive(false);
+
+            ResetReadyButton();
         }
 
         public void ToggleReady()

@@ -192,6 +192,13 @@ namespace RedesGame.Managers
         static void OnMatchEndedChanged(Changed<GameManager> changed)
         {
             var behaviour = changed.Behaviour;
+            if (!behaviour.MatchEnded)
+            {
+                EventManager.TriggerEvent("MatchReset");
+                ScreenManager.Instance.Deactivate();
+                return;
+            }
+
             EventManager.TriggerEvent("MatchEnded", behaviour.Winner);
             ScreenManager.Instance.Deactivate();
         }
@@ -200,6 +207,11 @@ namespace RedesGame.Managers
         {
             var behaviour = changed.Behaviour;
             behaviour.BroadcastReadyStatus();
+
+            if (behaviour.PlayersInGame >= behaviour._minPlayersPerGame)
+            {
+                EventManager.TriggerEvent("AllPlayersInGame");
+            }
         }
 
         static void OnReadyPlayersChanged(Changed<GameManager> changed)
