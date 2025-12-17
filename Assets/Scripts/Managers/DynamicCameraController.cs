@@ -54,6 +54,8 @@ namespace RedesGame.Managers
 
         private void LateUpdate()
         {
+            _players.RemoveAll(p => p == null || !p.IsActive || p.IsDead);
+
             if (Time.time >= _nextRefreshTime)
             {
                 RefreshTargets();

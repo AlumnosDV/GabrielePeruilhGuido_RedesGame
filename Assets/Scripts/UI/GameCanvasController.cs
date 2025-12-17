@@ -28,6 +28,8 @@ namespace RedesGame.UI
             _loseConditionScreen.SetActive(false);
             _waitingScreen.SetActive(true);
 
+            ResetReadyButton();
+
             if (ScreenManager.Instance != null)
                 ScreenManager.Instance.Deactivate();
 
@@ -53,6 +55,8 @@ namespace RedesGame.UI
                     gm.CurrentPlayersInGame,
                     gm.MinPlayersPerGame
                 );
+
+                ResetReadyButton();
             }
         }
 
@@ -89,12 +93,13 @@ namespace RedesGame.UI
             if (_readyButton != null)
             {
                 _readyButton.gameObject.SetActive(true);
+                _readyButton.interactable = true;
                 var label = _readyButton.GetComponentInChildren<TextMeshProUGUI>();
                 if (label != null)
                     label.text = "Ready";
             }
 
-            UpdateReadyStatus(0, 0, 0);
+            UpdateReadyStatus(gmReadyPlayers(), gmPlayersInGame(), gmMinPlayers());
 
             if (ScreenManager.Instance != null)
                 ScreenManager.Instance.Deactivate();
@@ -136,6 +141,7 @@ namespace RedesGame.UI
             var isWinner = NetworkPlayer.Local.Object.InputAuthority == winner;
 
             _waitingScreen.SetActive(false);
+            ResetReadyButton();
 
             if (_matchResult != null)
             {
@@ -187,6 +193,37 @@ namespace RedesGame.UI
         public void ReplayMatch()
         {
             EventManager.TriggerEvent("ReplayMatch");
+        }
+
+        private int gmReadyPlayers()
+        {
+            var gm = FindObjectOfType<RedesGame.Managers.GameManager>();
+            return gm != null ? gm.CurrentReadyPlayers : 0;
+        }
+
+        private int gmPlayersInGame()
+        {
+            var gm = FindObjectOfType<RedesGame.Managers.GameManager>();
+            return gm != null ? gm.CurrentPlayersInGame : 0;
+        }
+
+        private int gmMinPlayers()
+        {
+            var gm = FindObjectOfType<RedesGame.Managers.GameManager>();
+            return gm != null ? gm.MinPlayersPerGame : 0;
+        }
+
+        private void ResetReadyButton()
+        {
+            _localReady = false;
+
+            if (_readyButton != null)
+            {
+                _readyButton.interactable = true;
+                var label = _readyButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (label != null)
+                    label.text = "Ready";
+            }
         }
     }
 }

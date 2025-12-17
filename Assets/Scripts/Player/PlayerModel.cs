@@ -238,6 +238,8 @@ namespace RedesGame.Player
             PlayerDead = true;
             _playerDead = true;
 
+            HandleGunDepleted();
+
             DisableRenderersAndColliders();
 
             EventManager.TriggerEvent("PlayerEliminated", Object.InputAuthority);
