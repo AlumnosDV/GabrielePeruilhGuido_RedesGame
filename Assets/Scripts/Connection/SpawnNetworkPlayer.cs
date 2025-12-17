@@ -73,10 +73,15 @@ namespace RedesGame.Player
 
         private void TrySpawnPlayer(NetworkRunner runner, PlayerRef player)
         {
-            if (runner.TryGetPlayerObject(player, out _))
+            if (runner.TryGetPlayerObject(player, out var existingObject))
             {
-                Debug.Log($"[SpawnNetworkPlayer] Player {player} already has an object, skipping spawn");
-                return;
+                if (existingObject != null && existingObject.IsValid && existingObject.gameObject != null)
+                {
+                    Debug.Log($"[SpawnNetworkPlayer] Player {player} already has an object, skipping spawn");
+                    return;
+                }
+
+                runner.SetPlayerObject(player, null);
             }
 
             var spawnPos = Extensions.GetRandomSpawnPoint();

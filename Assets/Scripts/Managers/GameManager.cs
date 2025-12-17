@@ -290,6 +290,12 @@ namespace RedesGame.Managers
 
             foreach (var player in Runner.ActivePlayers)
             {
+                if (Runner.TryGetPlayerObject(player, out var playerObject))
+                {
+                    Runner.Despawn(playerObject);
+                    Runner.SetPlayerObject(player, null);
+                }
+
                 _playerReadyState[player] = false;
             }
 
