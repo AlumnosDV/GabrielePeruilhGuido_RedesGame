@@ -306,7 +306,16 @@ namespace RedesGame.Managers
                 EventManager.TriggerEvent("AllPlayersInGame");
             }
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            // Use the runner scene loader so every client reloads the lobby together
+            // instead of only the host reloading locally.
+            if (Runner != null && Runner.IsRunning)
+            {
+                Runner.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            else
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
         }
     }
 }
