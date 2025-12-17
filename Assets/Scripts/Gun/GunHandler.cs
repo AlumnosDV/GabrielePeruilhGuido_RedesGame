@@ -58,6 +58,9 @@ namespace RedesGame.Guns
             if (newGunIndex < 0 || newGunIndex >= _orderedGunIds.Count)
                 return -1;
             var newGun = GetGunByIndex(newGunIndex);
+            if (newGun == null)
+                return -1;
+
             newGun.SetTarget(target);
 
             Gun oldGun = null;

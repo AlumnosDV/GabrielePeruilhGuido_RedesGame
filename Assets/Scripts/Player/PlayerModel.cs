@@ -321,7 +321,7 @@ namespace RedesGame.Player
 
             if (Object.HasStateAuthority)
             {
-                SwitchToDefaultGun();
+                RPC_SwitchToDefaultGun();
             }
             else
             {
@@ -329,19 +329,24 @@ namespace RedesGame.Player
             }
         }
 
-        private void SwitchToDefaultGun()
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_RequestDefaultGun()
+        {
+            RPC_SwitchToDefaultGun();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_SwitchToDefaultGun()
         {
             var defaultGunIndex = GunHandler.Instance.SpawnDefaultGun(this);
+
+            if (!Object.HasStateAuthority)
+                return;
+
             if (defaultGunIndex >= 0)
             {
                 RPC_ChangeGun(defaultGunIndex);
             }
-        }
-
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_RequestDefaultGun()
-        {
-            SwitchToDefaultGun();
         }
 
         static void OnChangeGun(Changed<PlayerModel> changed)
@@ -350,24 +355,16 @@ namespace RedesGame.Player
             if (behaviour.IndexOfNewWeapon < 0)
                 return;
 
-            if (behaviour.Object.HasStateAuthority)
-            {
-                var newWeaponIndex = GunHandler.Instance.ChangeGun(
-                    behaviour,
-                    behaviour._currentWeaponIndex,
-                    behaviour.IndexOfNewWeapon
-                );
+            var newWeaponIndex = GunHandler.Instance.ChangeGun(
+                behaviour,
+                behaviour._currentWeaponIndex,
+                behaviour.IndexOfNewWeapon
+            );
 
-                if (newWeaponIndex >= 0)
-                {
-                    behaviour._currentWeaponIndex = newWeaponIndex;
-                    behaviour._currentGun = GunHandler.Instance.GetGunByIndex(newWeaponIndex);
-                }
-            }
-            else
+            if (newWeaponIndex >= 0)
             {
-                behaviour._currentWeaponIndex = behaviour.IndexOfNewWeapon;
-                behaviour._currentGun = GunHandler.Instance.GetGunByIndex(behaviour.IndexOfNewWeapon);
+                behaviour._currentWeaponIndex = newWeaponIndex;
+                behaviour._currentGun = GunHandler.Instance.GetGunByIndex(newWeaponIndex);
                 behaviour._currentGun?.SetTarget(behaviour);
             }
         }
