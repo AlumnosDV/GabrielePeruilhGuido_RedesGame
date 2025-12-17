@@ -18,6 +18,7 @@ namespace RedesGame.UI
         [SerializeField] private Button _readyButton;
         [SerializeField] private TextMeshProUGUI _readyStatus;
         [SerializeField] private TextMeshProUGUI _matchResult;
+        [SerializeField] private Button[] _replayButtons;
 
         private bool _localReady;
 
@@ -34,6 +35,17 @@ namespace RedesGame.UI
                 ScreenManager.Instance.Deactivate();
 
             UpdateReadyStatus(0, 0, 0);
+
+            if (_replayButtons != null)
+            {
+                foreach (var button in _replayButtons)
+                {
+                    if (button != null)
+                    {
+                        button.onClick.AddListener(ReplayMatch);
+                    }
+                }
+            }
         }
 
 
