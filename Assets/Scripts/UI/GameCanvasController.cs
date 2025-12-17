@@ -90,6 +90,15 @@ namespace RedesGame.UI
             _waitingScreen.SetActive(true);
             _localReady = false;
 
+            if (_winConditionScreen != null)
+                _winConditionScreen.SetActive(false);
+
+            if (_loseConditionScreen != null)
+                _loseConditionScreen.SetActive(false);
+
+            if (_matchResult != null)
+                _matchResult.gameObject.SetActive(false);
+
             if (_readyButton != null)
             {
                 _readyButton.gameObject.SetActive(true);
@@ -134,7 +143,7 @@ namespace RedesGame.UI
 
         private void OnMatchEnded(object[] obj)
         {
-            if (obj.Length < 1 || NetworkPlayer.Local == null)
+            if (obj.Length < 1 || NetworkPlayer.Local == null || NetworkPlayer.Local.Object == null)
                 return;
 
             var winner = (PlayerRef)obj[0];
