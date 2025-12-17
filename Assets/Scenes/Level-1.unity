@@ -1550,6 +1550,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1666458282510705300, guid: 583c725124fb6fd40a6be980263f616e, type: 3}
+      propertyPath: _ammoCapacity
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3212290597062096914, guid: 583c725124fb6fd40a6be980263f616e, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -3720,11 +3724,11 @@ MonoBehaviour:
   targetCamera: {fileID: 519420031}
   offset: {x: 0, y: 0, z: -10}
   smoothTime: 0.2
-  minZoom: 5
-  maxZoom: 15
+  minZoom: 6
+  maxZoom: 9
   distanceForMaxZoom: 25
-  distanceForMinZoom: 5
-  zoomSmoothing: 5
+  distanceForMinZoom: 6
+  zoomSmoothing: 4
   targetsRefreshInterval: 0.5
 --- !u!4 &1302672112
 Transform:

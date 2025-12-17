@@ -87,7 +87,7 @@ namespace RedesGame.Guns
 
             if (string.IsNullOrWhiteSpace(_gunId) && player != null)
             {
-                _gunId = $"player-{player.Object.InputAuthority.Raw}-default";
+                _gunId = $"player-{player.Object.InputAuthority.PlayerId}-default";
             }
 
             if (IsPickupGun)

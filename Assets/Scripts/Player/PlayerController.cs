@@ -31,7 +31,7 @@ namespace RedesGame.Player
         public override void Spawned()
         {
             _rb = GetComponent<NetworkRigidbody2D>();
-            _collider = GetComponent<Collider2D>();
+            _collider = GetComponentInChildren<Collider2D>();
             _playerModel = GetComponent<PlayerModel>();
             _playerBody = _playerModel != null ? _playerModel.PlayerBody.transform : null;
 

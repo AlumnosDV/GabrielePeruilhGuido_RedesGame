@@ -108,13 +108,11 @@ namespace RedesGame.Bullets
                     return;
             }
 
-            var damageable = collision.GetComponent<IDamageable>();
+            var damageable = collision.GetComponentInParent<IDamageable>();
             if (damageable != null)
             {
                 Vector2 dir = _myRigidBody.Rigidbody.velocity.normalized;
                 damageable.TakeForceDamage(_bulletData.ForceDamage, dir);
-                // Si en algún caso querés que también quite vida:
-                // damageable.TakeLifeDamage();
             }
 
             DestroyBullet();
