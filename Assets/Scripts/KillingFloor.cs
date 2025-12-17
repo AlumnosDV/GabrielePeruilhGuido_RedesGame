@@ -11,7 +11,7 @@ namespace RedesGame
         {
 
             if (collision.CompareTag("Player"))
-                collision.gameObject.GetComponent<IDamageable>()?.TakeLifeDamage();
+                collision.gameObject.GetComponentInParent<IDamageable>()?.TakeLifeDamage();
         }
 
     }

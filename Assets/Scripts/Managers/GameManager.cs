@@ -8,7 +8,7 @@ namespace RedesGame.Managers
 {
     public class GameManager : NetworkBehaviour
     {
-        [SerializeField] private int _minPlayersPerGame = 2;
+        [SerializeField] private int _minPlayersPerGame = 1;
 
         [Networked(OnChanged = nameof(OnPlayersInGameChanged))]
         private int PlayersInGame { get; set; }

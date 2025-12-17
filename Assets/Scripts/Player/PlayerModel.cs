@@ -148,6 +148,15 @@ namespace RedesGame.Player
 
         private void FireBullet()
         {
+            if (_currentGun == null)
+                return;
+
+            if (!_currentGun.HasAmmo)
+            {
+                HandleGunDepleted();
+                return;
+            }
+
             _lastFiringTime = Runner.SimulationTime;
             Vector2 direction = _currentGun != null ? _currentGun.GetDirection() : Vector2.right;
             Quaternion rotation = Quaternion.LookRotation(Vector3.forward, direction);
@@ -163,6 +172,12 @@ namespace RedesGame.Player
                 return;
 
             _currentGun.Shoot(bullet);
+            _currentGun.ConsumeAmmo();
+
+            if (_currentGun.IsOutOfAmmo)
+            {
+                HandleGunDepleted();
+            }
         }
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -279,6 +294,14 @@ namespace RedesGame.Player
             if (newGun == _currentGun)
                 return;
 
+            // Attach visually for the input authority so the player instantly sees the pickup while
+            // the state authority processes the authoritative swap.
+            if (Object.HasInputAuthority)
+            {
+                newGun.SetTarget(this);
+                _currentGun = newGun;
+            }
+
             _currentGun = newGun;
             RPC_ChangeGun(GunHandler.Instance.GetIndexForGun(newGun));
         }
@@ -289,10 +312,43 @@ namespace RedesGame.Player
             IndexOfNewWeapon = newGunIndex;
         }
 
+        private void HandleGunDepleted()
+        {
+            if (_currentGun == null)
+                return;
+
+            if (Object.HasStateAuthority)
+            {
+                SwitchToDefaultGun();
+            }
+            else
+            {
+                RPC_RequestDefaultGun();
+            }
+        }
+
+        private void SwitchToDefaultGun()
+        {
+            var defaultGunIndex = GunHandler.Instance.SpawnDefaultGun(this);
+            if (defaultGunIndex >= 0)
+            {
+                RPC_ChangeGun(defaultGunIndex);
+            }
+        }
+
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_RequestDefaultGun()
+        {
+            SwitchToDefaultGun();
+        }
+
         static void OnChangeGun(Changed<PlayerModel> changed)
         {
             var behaviour = changed.Behaviour;
-            if (behaviour.IndexOfNewWeapon >= 0)
+            if (behaviour.IndexOfNewWeapon < 0)
+                return;
+
+            if (behaviour.Object.HasStateAuthority)
             {
                 var newWeaponIndex = GunHandler.Instance.ChangeGun(
                     behaviour,
@@ -305,6 +361,12 @@ namespace RedesGame.Player
                     behaviour._currentWeaponIndex = newWeaponIndex;
                     behaviour._currentGun = GunHandler.Instance.GetGunByIndex(newWeaponIndex);
                 }
+            }
+            else
+            {
+                behaviour._currentWeaponIndex = behaviour.IndexOfNewWeapon;
+                behaviour._currentGun = GunHandler.Instance.GetGunByIndex(behaviour.IndexOfNewWeapon);
+                behaviour._currentGun?.SetTarget(behaviour);
             }
         }
 
