@@ -300,7 +300,7 @@ namespace RedesGame.Managers
                 EventManager.TriggerEvent("AllPlayersInGame");
             }
 
-            Runner.LoadScene(SceneManager.GetActiveScene().name);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }

@@ -45,7 +45,6 @@ namespace RedesGame.UI
             _sessionsScreen.SetActive(false);
             _createSessionScreen.SetActive(false);
             _onJoiningSessionScreen.SetActive(false);
-            _nickNameInput.gameObject.SetActive(!hasStoredNick);
         }
 
         private void Start()
@@ -86,7 +85,7 @@ namespace RedesGame.UI
         public void GoToNickNameScreen()
         {
             ExecuteCommand(new ChangeMenuCommand(
-                new[] { _nickNameScreen }, new[] { _mainMenuButtons }));
+                new[] { _nickNameScreen, _backButton }, new[] { _mainMenuButtons }));
         }
 
         public void GoToSessionsList()
