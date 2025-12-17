@@ -937,12 +937,12 @@ MonoBehaviour:
   _interpolationDataSource: 0
   moveSpeed: 10
   jumpForce: 35
-  fallThroughDuration: 0.3
+  fallThroughDuration: 0.15
   upwardPassCheckDistance: 1
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  groundedCheckDistance: 0.1
+  groundedCheckDistance: 0.15
   groundedNormalThreshold: 0.2
 --- !u!114 &7460232119018586000
 MonoBehaviour:
