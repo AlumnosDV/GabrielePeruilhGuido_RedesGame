@@ -84,9 +84,15 @@ namespace RedesGame.UI
         private void OnAllPlayersInGame(object[] obj)
         {
             _waitingScreen.SetActive(true);
+            _localReady = false;
 
             if (_readyButton != null)
+            {
                 _readyButton.gameObject.SetActive(true);
+                var label = _readyButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (label != null)
+                    label.text = "Ready";
+            }
 
             UpdateReadyStatus(0, 0, 0);
 

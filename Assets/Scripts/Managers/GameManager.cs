@@ -276,6 +276,30 @@ namespace RedesGame.Managers
 
         private void RestartMatch()
         {
+            MatchStarted = false;
+            MatchEnded = false;
+            AllPlayersLeft = false;
+            Timer = 0f;
+            ReadyPlayers = 0;
+            PlayersInGame = 0;
+            AlivePlayers = 0;
+            Winner = PlayerRef.None;
+
+            _playerReadyState.Clear();
+            _alivePlayers.Clear();
+
+            foreach (var player in Runner.ActivePlayers)
+            {
+                _playerReadyState[player] = false;
+            }
+
+            RecalculateCounts();
+
+            if (PlayersInGame >= _minPlayersPerGame)
+            {
+                EventManager.TriggerEvent("AllPlayersInGame");
+            }
+
             Runner.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
