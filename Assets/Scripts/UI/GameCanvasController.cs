@@ -18,6 +18,7 @@ namespace RedesGame.UI
         [SerializeField] private Button _readyButton;
         [SerializeField] private TextMeshProUGUI _readyStatus;
         [SerializeField] private TextMeshProUGUI _matchResult;
+        [SerializeField] private Button[] _replayButtons;
 
         private bool _localReady;
 
@@ -34,6 +35,17 @@ namespace RedesGame.UI
                 ScreenManager.Instance.Deactivate();
 
             UpdateReadyStatus(0, 0, 0);
+
+            if (_replayButtons != null)
+            {
+                foreach (var button in _replayButtons)
+                {
+                    if (button != null)
+                    {
+                        button.onClick.AddListener(ReplayMatch);
+                    }
+                }
+            }
         }
 
 
@@ -90,6 +102,15 @@ namespace RedesGame.UI
             _waitingScreen.SetActive(true);
             _localReady = false;
 
+            if (_winConditionScreen != null)
+                _winConditionScreen.SetActive(false);
+
+            if (_loseConditionScreen != null)
+                _loseConditionScreen.SetActive(false);
+
+            if (_matchResult != null)
+                _matchResult.gameObject.SetActive(false);
+
             if (_readyButton != null)
             {
                 _readyButton.gameObject.SetActive(true);
@@ -134,7 +155,7 @@ namespace RedesGame.UI
 
         private void OnMatchEnded(object[] obj)
         {
-            if (obj.Length < 1 || NetworkPlayer.Local == null)
+            if (obj.Length < 1 || NetworkPlayer.Local == null || NetworkPlayer.Local.Object == null)
                 return;
 
             var winner = (PlayerRef)obj[0];
