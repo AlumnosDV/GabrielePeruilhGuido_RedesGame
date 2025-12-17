@@ -98,6 +98,17 @@ namespace RedesGame.Player
             Debug.Log($"[SpawnNetworkPlayer] Spawned player object for {player}");
         }
 
+        public void RespawnAllPlayers(NetworkRunner runner)
+        {
+            if (runner == null || !runner.IsServer)
+                return;
+
+            foreach (var player in runner.ActivePlayers)
+            {
+                TrySpawnPlayer(runner, player);
+            }
+        }
+
         // ---------- SESIONES / UI ----------
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)

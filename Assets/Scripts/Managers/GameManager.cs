@@ -306,12 +306,15 @@ namespace RedesGame.Managers
                 EventManager.TriggerEvent("AllPlayersInGame");
             }
 
-            // Use the runner scene loader so every client reloads the lobby together
-            // instead of only the host reloading locally. Fusion 1.x uses SetActiveScene
-            // on the runner instead of LoadScene.
             if (Runner != null && Runner.IsRunning)
             {
                 Runner.SetActiveScene(SceneManager.GetActiveScene().buildIndex);
+
+                var spawner = Runner.GetComponent<RedesGame.Player.SpawnNetworkPlayer>();
+                if (spawner != null)
+                {
+                    spawner.RespawnAllPlayers(Runner);
+                }
             }
             else
             {
