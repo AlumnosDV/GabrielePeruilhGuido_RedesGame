@@ -70,6 +70,7 @@ namespace RedesGame.UI
             _networkHandler.CreateGame(sessionName, sceneName);
         }
 
+
         public void GoToControls()
         {
             ExecuteCommand(new ChangeMenuCommand(
