@@ -46,11 +46,12 @@ namespace RedesGame.Managers
         public int MinPlayersPerGame => _minPlayersPerGame;
         public override void Spawned()
         {
-            _isSpawned = true; 
+            _isSpawned = true;
 
             ScreenManager.Instance.Deactivate();
             EventManager.StartListening("PlayerJoined", OnPlayerJoined);
             EventManager.StartListening("GoToMainMenu", DespawnPlayers);
+            EventManager.StartListening("ReplayMatch", OnReplayMatchRequested);
             EventManager.StartListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StartListening("PlayerEliminated", OnPlayerEliminated);
             EventManager.StartListening("PlayerLeft", OnPlayerLeft);
@@ -62,6 +63,7 @@ namespace RedesGame.Managers
 
             EventManager.StopListening("PlayerJoined", OnPlayerJoined);
             EventManager.StopListening("GoToMainMenu", DespawnPlayers);
+            EventManager.StopListening("ReplayMatch", OnReplayMatchRequested);
             EventManager.StopListening("PlayerReadyChanged", OnPlayerReadyChanged);
             EventManager.StopListening("PlayerEliminated", OnPlayerEliminated);
             EventManager.StopListening("PlayerLeft", OnPlayerLeft);
@@ -85,10 +87,26 @@ namespace RedesGame.Managers
 
         private void DespawnPlayers(object[] obj)
         {
-            if (!Object.HasStateAuthority)
-                return;
+            if (Object.HasStateAuthority)
+            {
+                AllPlayersLeft = true;
+            }
+            else
+            {
+                RPC_RequestReturnToMenu();
+            }
+        }
 
-            AllPlayersLeft = true;
+        private void OnReplayMatchRequested(object[] obj)
+        {
+            if (Object.HasStateAuthority)
+            {
+                RestartMatch();
+            }
+            else
+            {
+                RPC_RequestReplay();
+            }
         }
 
         private void OnPlayerJoined(object[] obj)
@@ -242,6 +260,23 @@ namespace RedesGame.Managers
             int seconds = Mathf.FloorToInt(myTime % 60);
 
             return string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_RequestReturnToMenu()
+        {
+            AllPlayersLeft = true;
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RPC_RequestReplay()
+        {
+            RestartMatch();
+        }
+
+        private void RestartMatch()
+        {
+            Runner.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }

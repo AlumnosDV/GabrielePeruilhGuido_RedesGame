@@ -35,15 +35,17 @@ namespace RedesGame.UI
         private void Awake()
         {
             Debug.Log("Awake Menu Principal UI");
-            _mainMenuButtons.SetActive(false);
+            bool hasStoredNick = PlayerPrefs.HasKey("PlayerNickName");
+
+            _mainMenuButtons.SetActive(hasStoredNick);
             _creditsScreen.SetActive(false);
             _controlsScreen.SetActive(false);
             _backButton.SetActive(false);
-            _nickNameScreen.SetActive(true);
+            _nickNameScreen.SetActive(!hasStoredNick);
             _sessionsScreen.SetActive(false);
             _createSessionScreen.SetActive(false);
             _onJoiningSessionScreen.SetActive(false);
-            _nickNameInput.gameObject.SetActive(true);
+            _nickNameInput.gameObject.SetActive(!hasStoredNick);
         }
 
         private void Start()

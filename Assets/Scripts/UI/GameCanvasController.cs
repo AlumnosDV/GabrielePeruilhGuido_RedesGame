@@ -177,5 +177,10 @@ namespace RedesGame.UI
         {
             EventManager.TriggerEvent("GoToMainMenu");
         }
+
+        public void ReplayMatch()
+        {
+            EventManager.TriggerEvent("ReplayMatch");
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace RedesGame.Player
         [SerializeField] private float _checkGunsRadius = 3f;
 
         [Header("Life")]
-        [SerializeField] private int _maxLife = 3;
+        [SerializeField, Min(1)] private int _maxLife = 3;
 
         private Gun _currentGun;
         private int _currentWeaponIndex;

@@ -21,6 +21,7 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkSceneManagerDefault _sceneManager;
 
     private const string LOBBY_NAME = "OurLobbyId";
+    private const int MAX_PLAYERS_PER_GAME = 2;
 
     private void Awake()
     {
@@ -144,6 +145,7 @@ public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
             SessionName = sessionName,
             Scene = sceneIndex,       // Fusion 1.x usa int
             CustomLobbyName = LOBBY_NAME,
+            PlayerCount = MAX_PLAYERS_PER_GAME,
             SceneManager = _sceneManager
         };
 
